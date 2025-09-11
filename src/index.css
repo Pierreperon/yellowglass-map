@@ -2,41 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* 123 Pare-Brise Automotive Service Design System */
 
 @layer base {
   :root {
+    /* Core brand colors */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 215 25% 27%;
 
+    /* Automotive teal brand */
+    --primary: 158 64% 52%;
+    --primary-hover: 158 64% 45%;
+    --primary-light: 158 64% 95%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Professional secondary */
+    --secondary: 210 20% 96%;
+    --secondary-hover: 210 20% 92%;
+    --secondary-foreground: 215 25% 27%;
+
+    /* Neutral system */
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 20% 96%;
+    --accent-foreground: 215 25% 27%;
+
+    /* Automotive gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(158 64% 52%), hsl(158 64% 45%));
+    --gradient-hero: linear-gradient(135deg, hsl(158 64% 52%), hsl(178 64% 52%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 20% 99%));
+
+    /* Professional shadows */
+    --shadow-card: 0 4px 6px -1px hsl(158 64% 52% / 0.1), 0 2px 4px -1px hsl(158 64% 52% / 0.06);
+    --shadow-card-hover: 0 10px 15px -3px hsl(158 64% 52% / 0.15), 0 4px 6px -2px hsl(158 64% 52% / 0.1);
+    --shadow-header: 0 1px 3px 0 hsl(0 0% 0% / 0.1);
+
+    /* Interactive elements */
+    --border: 214 31% 91%;
+    --input: 210 20% 96%;
+    --ring: 158 64% 52%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 215 25% 27%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 27%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +112,112 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer components {
+  /* Agency Cards */  
+  .agency-card {
+    @apply bg-gradient-to-b from-card to-secondary/20 border-0 rounded-xl p-6 transition-all duration-300 hover:shadow-xl cursor-pointer;
+    box-shadow: var(--shadow-card);
+  }
+  
+  .agency-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+  
+  .agency-card.selected {
+    @apply ring-2 ring-primary/20 bg-gradient-to-b from-primary-light to-primary/5;
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* Hero Buttons */
+  .btn-hero {
+    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+    background: var(--gradient-primary);
+    color: hsl(var(--primary-foreground));
+    box-shadow: 0 4px 14px 0 hsl(158 64% 52% / 0.25);
+  }
+  
+  .btn-hero:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px 0 hsl(158 64% 52% / 0.35);
+  }
+
+  /* Search Input */
+  .search-input {
+    @apply w-full pl-12 pr-4 py-4 rounded-xl border-0 bg-white/90 backdrop-blur-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all duration-300;
+    box-shadow: 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+  }
+  
+  .search-input:focus {
+    box-shadow: 0 0 0 3px hsl(158 64% 52% / 0.1), 0 10px 15px -3px hsl(0 0% 0% / 0.1);
+  }
+
+  /* Professional scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-secondary;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-primary/30 rounded-full hover:bg-primary/50;
+  }
+}
+
+@layer utilities {
+  /* Automotive animations */
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+  
+  .animate-bounce-gentle {
+    animation: bounceGentle 1s ease-in-out;  
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceGentle {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0,0,0);
+  }
+  40%, 43% {
+    transform: translate3d(0,-8px,0);
+  }
+  70% {
+    transform: translate3d(0,-4px,0);
+  }
+  90% {
+    transform: translate3d(0,-2px,0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
