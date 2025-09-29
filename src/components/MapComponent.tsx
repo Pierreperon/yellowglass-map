@@ -33,12 +33,12 @@ export const MapComponent = ({ agencies, selectedAgency, onAgencySelect }: MapCo
               {
                 "featureType": "water",
                 "elementType": "geometry",
-                "stylers": [{"color": "#1DB584"}]
+                "stylers": [{"color": "#4a90e2"}]
               },
               {
                 "featureType": "landscape",
                 "elementType": "geometry",
-                "stylers": [{"color": "#f8fafc"}]
+                "stylers": [{"color": "#f8f9fa"}]
               },
               {
                 "featureType": "road",
@@ -48,7 +48,7 @@ export const MapComponent = ({ agencies, selectedAgency, onAgencySelect }: MapCo
               {
                 "featureType": "poi",
                 "elementType": "geometry",
-                "stylers": [{"color": "#e8f5e8"}]
+                "stylers": [{"color": "#f0f0f0"}]
               }
             ],
             mapTypeControl: false,
@@ -68,25 +68,39 @@ export const MapComponent = ({ agencies, selectedAgency, onAgencySelect }: MapCo
               title: agency.name,
               icon: {
                 url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                  <svg width="44" height="44" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="22" cy="22" r="20" fill="#1DB584" stroke="#ffffff" stroke-width="3"/>
-                    <text x="22" y="28" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="14" font-weight="bold">${agency.id}</text>
+                  <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="25" cy="25" r="22" fill="#FFD700" stroke="#333333" stroke-width="3"/>
+                    <circle cx="25" cy="25" r="15" fill="#333333"/>
+                    <text x="25" y="31" text-anchor="middle" fill="#FFD700" font-family="Arial, sans-serif" font-size="14" font-weight="bold">${agency.id}</text>
                   </svg>
                 `),
-                scaledSize: new google.maps.Size(44, 44),
-                anchor: new google.maps.Point(22, 22)
+                scaledSize: new google.maps.Size(50, 50),
+                anchor: new google.maps.Point(25, 25)
               }
             });
 
             const infoWindow = new google.maps.InfoWindow({
               content: `
-                <div style="padding: 12px; min-width: 220px; font-family: system-ui, -apple-system, sans-serif;">
-                  <h3 style="margin: 0 0 8px 0; color: #1DB584; font-size: 18px; font-weight: bold;">${agency.name}</h3>
-                  <p style="margin: 4px 0; font-size: 14px; font-weight: 500; color: #374151;">${agency.address}</p>
-                  <p style="margin: 4px 0; font-size: 14px; color: #6B7280;">${agency.postalCode} ${agency.city}</p>
-                  <div style="margin: 12px 0 0 0; padding: 8px 0; border-top: 1px solid #E5E7EB;">
-                    <p style="margin: 0; font-size: 14px; color: #1DB584; font-weight: 600;">📞 ${agency.phone}</p>
+                <div style="padding: 15px; min-width: 280px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+                  <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                    <div style="background: #FFD700; width: 30px; height: 20px; border-radius: 15px; margin-right: 10px; display: flex; align-items: center; justify-content: center;">
+                      <span style="color: #333; font-weight: bold; font-size: 12px;">YG</span>
+                    </div>
+                    <h3 style="margin: 0; color: #333; font-size: 18px; font-weight: bold;">${agency.name}</h3>
                   </div>
+                  <div style="margin-bottom: 8px;">
+                    <p style="margin: 0; font-size: 14px; color: #555;"><strong>${agency.address}</strong></p>
+                    <p style="margin: 0; font-size: 14px; color: #555;">${agency.postalCode} ${agency.city}</p>
+                  </div>
+                  <div style="margin-bottom: 8px;">
+                    <p style="margin: 0; font-size: 14px; color: #FFD700;"><strong>📞 ${agency.phone}</strong></p>
+                  </div>
+                  <div style="margin-bottom: 12px;">
+                    <p style="margin: 0; font-size: 13px; color: #666;"><strong>Horaires:</strong> ${agency.hours}</p>
+                  </div>
+                  <button style="background: #FFD700; color: #333; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px;">
+                    Prendre rendez-vous
+                  </button>
                 </div>
               `
             });

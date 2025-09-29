@@ -3,6 +3,7 @@ import { AGENCIES, Agency } from '@/types/agency';
 import { SearchHeader } from '@/components/SearchHeader';
 import { AgencyCard } from '@/components/AgencyCard';
 import { MapComponent } from '@/components/MapComponent';
+import { Navigation2 } from 'lucide-react';
 
 const Index = () => {
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
@@ -14,8 +15,8 @@ const Index = () => {
 
   const handleGeolocation = () => {
     // For demo purposes, just show a message
-    // In a real app, you'd find the nearest agency
-    alert('Fonctionnalité de géolocalisation en cours de développement');
+    // In a real app, you'd find the nearest center
+    alert('📍 Fonctionnalité de géolocalisation en cours de développement');
   };
 
   const filteredAgencies = AGENCIES.filter(agency =>
@@ -37,12 +38,22 @@ const Index = () => {
         {/* Sidebar */}
         <div className="w-96 bg-white/80 backdrop-blur-sm border-r border-border/50 overflow-y-auto custom-scrollbar">
           <div className="p-6">
+            {selectedAgency && (
+              <button
+                onClick={() => setSelectedAgency(null)}
+                className="mb-6 text-primary hover:text-primary-hover flex items-center gap-2 font-medium"
+              >
+                <Navigation2 size={18} />
+                Voir tous les centres
+              </button>
+            )}
+
             <div className="mb-6">
               <h2 className="text-xl font-bold text-foreground mb-2">
-                Nos agences ({filteredAgencies.length})
+                Nos centres ({filteredAgencies.length})
               </h2>
               <p className="text-sm text-muted-foreground">
-                Cliquez sur une agence pour la localiser
+                Cliquez sur un centre pour le localiser
               </p>
             </div>
             

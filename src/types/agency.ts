@@ -7,74 +7,57 @@ export interface Agency {
   phone: string;
   lat: number;
   lng: number;
-  type: string;
+  hours: string;
+  services: string[];
 }
 
 export const AGENCIES: Agency[] = [
   {
     id: 1,
-    name: "MONTLUÇON",
-    address: "3 Rue Albert Einstein",
-    city: "Montluçon",
-    postalCode: "03100",
-    phone: "04 70 05 11 xx",
-    lat: 46.3404,
-    lng: 2.6038,
-    type: "Agence"
+    name: "Yellow Glass Rennes",
+    address: "3, Rue Jules Corvaisier",
+    city: "Combourg",
+    postalCode: "35270",
+    phone: "02 99 73 12 34",
+    lat: 48.4167,
+    lng: -1.7500,
+    hours: "Lun-Ven: 8h00-18h00, Sam: 8h00-12h00",
+    services: ["Remplacement pare-brise", "Réparation impact", "Intervention à domicile"]
   },
   {
     id: 2,
-    name: "BOURGES",
-    address: "Zone Industriel Farjallat",
-    city: "Bourges",
-    postalCode: "18000",
-    phone: "02 48 20 37 xx",
-    lat: 47.0810,
-    lng: 2.3988,
-    type: "Agence"
+    name: "Yellow Glass Angers",
+    address: "ACTIVAPARK, Rue du Pré des Landes",
+    city: "Saint-Léger-de-Linières",
+    postalCode: "49170",
+    phone: "02 41 92 45 67",
+    lat: 47.3833,
+    lng: -1.0833,
+    hours: "Lun-Ven: 8h00-18h00, Sam: 8h00-12h00",
+    services: ["Remplacement pare-brise", "Réparation impact", "Intervention à domicile"]
   },
   {
     id: 3,
-    name: "CHÂTEAUROUX",
-    address: "Allée de l'Industrie",
-    city: "Châteauroux",
-    postalCode: "36130",
-    phone: "02 54 60 37 xx",
-    lat: 46.8109,
-    lng: 1.6944,
-    type: "Agence"
+    name: "Yellow Glass Nice",
+    address: "38 Rte de Canta Galet",
+    city: "Nice",
+    postalCode: "06200",
+    phone: "04 93 84 56 78",
+    lat: 43.7102,
+    lng: 7.2620,
+    hours: "Lun-Ven: 8h00-18h00, Sam: 8h00-12h00",
+    services: ["Remplacement pare-brise", "Réparation impact", "Intervention à domicile"]
   },
   {
     id: 4,
-    name: "PARIS NORD",
-    address: "Avenue Jean Jaurès",
-    city: "Saint-Denis",
-    postalCode: "93200",
-    phone: "01 48 13 45 xx",
-    lat: 48.9356,
-    lng: 2.3539,
-    type: "Agence"
-  },
-  {
-    id: 5,
-    name: "LYON CENTRE",
-    address: "Rue de la République",
-    city: "Lyon",
-    postalCode: "69002",
-    phone: "04 78 42 15 xx",
-    lat: 45.7640,
-    lng: 4.8357,
-    type: "Agence"
-  },
-  {
-    id: 6,
-    name: "MARSEILLE",
-    address: "Boulevard Michelet",
-    city: "Marseille",
-    postalCode: "13008",
-    phone: "04 91 73 28 xx",
-    lat: 43.2965,
-    lng: 5.3698,
-    type: "Agence"
+    name: "Yellow Glass Tourrettes",
+    address: "121 CHEMIN DE CAMBARRAS LOT 10",
+    city: "Tourrettes",
+    postalCode: "83440",
+    phone: "04 94 76 89 12",
+    lat: 43.5667,
+    lng: 6.7500,
+    hours: "Lun-Ven: 8h00-18h00, Sam: 8h00-12h00",
+    services: ["Remplacement pare-brise", "Réparation impact", "Intervention à domicile"]
   }
 ];
