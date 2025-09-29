@@ -221,3 +221,17 @@
     transform: translateY(0);
   }
 }
+
+/* Animation subtile pour le logo */
+.logo-oval {
+  transition: transform 0.3s ease;
+}
+
+.logo-oval:hover {
+  transform: scale(1.05);
+}
+
+/* Amélioration du rendu du logo */
+.logo-container {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}

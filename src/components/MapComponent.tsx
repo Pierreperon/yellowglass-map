@@ -27,8 +27,17 @@ export const MapComponent = ({ agencies, selectedAgency, onAgencySelect }: MapCo
         
         if (mapRef.current) {
           const mapInstance = new google.maps.Map(mapRef.current, {
-            center: { lat: 46.603354, lng: 2.888334 },
-            zoom: 6,
+            center: { lat: 46.8566, lng: 2.3522 }, // Centre de la France
+            zoom: 6.2, // Zoom plus serré sur la France
+            restriction: {
+              latLngBounds: {
+                north: 51.5,
+                south: 41.0,
+                west: -5.5,
+                east: 10.0,
+              },
+              strictBounds: false,
+            },
             styles: [
               {
                 "featureType": "water",
@@ -49,6 +58,11 @@ export const MapComponent = ({ agencies, selectedAgency, onAgencySelect }: MapCo
                 "featureType": "poi",
                 "elementType": "geometry",
                 "stylers": [{"color": "#f0f0f0"}]
+              },
+              {
+                "featureType": "administrative.country",
+                "elementType": "geometry.stroke",
+                "stylers": [{"color": "#cccccc"}, {"weight": 1}]
               }
             ],
             mapTypeControl: false,
@@ -156,6 +170,15 @@ export const MapComponent = ({ agencies, selectedAgency, onAgencySelect }: MapCo
         marker.setAnimation(google.maps.Animation.BOUNCE);
         setTimeout(() => marker.setAnimation(null), 1400);
       }
+    } else if (!selectedAgency && map) {
+      // Reset view when no agency is selected
+      map.panTo({ lat: 46.8566, lng: 2.3522 }); // Centre France
+      map.setZoom(6.2); // Zoom France
+      markers.forEach(m => {
+        if ((m as any).infoWindow) {
+          (m as any).infoWindow.close();
+        }
+      });
     }
   }, [selectedAgency, map, markers]);
 

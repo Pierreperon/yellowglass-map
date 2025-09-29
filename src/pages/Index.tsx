@@ -13,6 +13,11 @@ const Index = () => {
     setSelectedAgency(agency);
   };
 
+  const resetView = () => {
+    setSelectedAgency(null);
+    // The map reset logic is handled in MapComponent
+  };
+
   const handleGeolocation = () => {
     // For demo purposes, just show a message
     // In a real app, you'd find the nearest center
@@ -40,7 +45,7 @@ const Index = () => {
           <div className="p-6">
             {selectedAgency && (
               <button
-                onClick={() => setSelectedAgency(null)}
+                onClick={resetView}
                 className="mb-6 text-primary hover:text-primary-hover flex items-center gap-2 font-medium"
               >
                 <Navigation2 size={18} />

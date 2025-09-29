@@ -30,16 +30,19 @@ export const SearchHeader = ({ searchTerm, onSearchChange, onGeolocation }: Sear
       <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10"></div>
       
       <div className="relative max-w-7xl mx-auto px-4 py-8">
-        {/* Yellow Glass Logo */}
+        {/* Logo Yellow Glass corrigé */}
         <div className="flex justify-center mb-6 animate-fade-in-up">
-          <div className="flex items-center">
-            <div className="bg-primary rounded-full w-12 h-8 flex items-center justify-center mr-3">
-              <div className="bg-primary w-8 h-4 rounded-full border-2 border-primary-foreground"></div>
+          <div className="flex items-center logo-container">
+            <span className="text-4xl font-bold text-gray-800 mr-1">yell</span>
+            <div className="relative">
+              {/* Forme ovale jaune du logo */}
+              <div className="bg-yellow-400 rounded-full w-16 h-8 flex items-center justify-center border-2 border-yellow-400 logo-oval">
+                <div className="bg-yellow-400 w-6 h-2 rounded-full transform rotate-12"></div>
+              </div>
             </div>
-            <div>
-              <span className="text-3xl font-bold text-foreground">yell</span>
-              <span className="text-3xl font-bold text-foreground">w</span>
-              <div className="text-xl font-bold text-foreground -mt-2">glass</div>
+            <span className="text-4xl font-bold text-gray-800 ml-1">w</span>
+            <div className="ml-3">
+              <div className="text-2xl font-bold text-gray-800 leading-none">glass</div>
             </div>
           </div>
         </div>
