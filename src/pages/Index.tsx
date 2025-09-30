@@ -3,6 +3,7 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { MapPin, Phone, Clock, Search, Navigation2 } from 'lucide-react';
 import mapPinIcon from '@/assets/mappin.png';
 import { CenterDetailsDrawer } from '@/components/CenterDetailsDrawer';
+import { centerMarker, getScreenMode } from '@/lib/mapPositioning';
 
 interface YellowGlassCenter {
   id: number;
@@ -84,18 +85,18 @@ const Index: React.FC = () => {
   // Fonction pour obtenir le zoom adaptatif selon la taille d'écran (plus large)
   const getResponsiveZoom = () => {
     const width = window.innerWidth;
-    if (width < 768) return 4.8; // Mobile - zoom beaucoup plus large
-    if (width < 1024) return 5.2; // Tablette - zoom plus large
-    return 6.2; // Desktop - zoom normal
+    if (width < 768) return 4.8;
+    if (width < 1024) return 5.2;
+    return 6.2;
   };
 
   // Fonction pour obtenir le centre adaptatif
   const getResponsiveCenter = () => {
     const width = window.innerWidth;
     if (width < 768) {
-      return { lat: 46.8566, lng: 2.8522 }; // Mobile - légèrement décalé à l'est
+      return { lat: 46.8566, lng: 2.8522 };
     }
-    return { lat: 46.8566, lng: 2.3522 }; // Desktop/Tablette - centre normal
+    return { lat: 46.8566, lng: 2.3522 };
   };
 
   // Fonction pour forcer le redimensionnement de la carte avec zoom adaptatif
@@ -132,85 +133,6 @@ const Index: React.FC = () => {
     }
   }, [map, isLoading]);
 
-  // Helper to wait for projection to be ready
-  const waitProjection = async (map: google.maps.Map, tries = 6): Promise<google.maps.Projection | null> => {
-    return new Promise((resolve) => {
-      const tick = () => {
-        const proj = map.getProjection?.();
-        if (proj || tries <= 0) {
-          resolve(proj || null);
-          return;
-        }
-        setTimeout(() => {
-          waitProjection(map, tries - 1).then(resolve);
-        }, 50);
-      };
-      tick();
-    });
-  };
-
-  // Helper function to center marker with pixel-perfect offset
-  const centerWithOffset = async (map: google.maps.Map, lat: number, lng: number, offsetX: number, offsetY: number) => {
-    const proj = await waitProjection(map);
-    const latLng = new google.maps.LatLng(lat, lng);
-    
-    if (!proj) {
-      // Fallback to panTo + panBy
-      map.panTo(latLng);
-      requestAnimationFrame(() => {
-        setTimeout(() => map.panBy(offsetX, offsetY), 50);
-      });
-      return;
-    }
-    
-    const zoom = map.getZoom() ?? 10;
-    const scale = Math.pow(2, zoom);
-    const worldPoint = proj.fromLatLngToPoint(latLng);
-    
-    if (!worldPoint) {
-      map.setCenter(latLng);
-      return;
-    }
-    
-    const pixelOffset = new google.maps.Point(offsetX / scale, offsetY / scale);
-    const targetPoint = new google.maps.Point(
-      worldPoint.x - pixelOffset.x,
-      worldPoint.y - pixelOffset.y
-    );
-    const targetLatLng = proj.fromPointToLatLng(targetPoint);
-    
-    if (targetLatLng) {
-      map.setCenter(targetLatLng);
-    }
-  };
-
-  // Helper to get positioning based on screen size
-  const getMapPositioning = () => {
-    const width = window.innerWidth;
-    if (width < 768) {
-      return {
-        mode: 'mobile' as const,
-        targetZoom: 10,
-        offsetX: 0,
-        offsetY: Math.round(window.innerHeight * 0.26)
-      };
-    }
-    if (width < 1024) {
-      return {
-        mode: 'tablet' as const,
-        targetZoom: 11,
-        offsetX: 0,
-        offsetY: Math.round(window.innerHeight * 0.20)
-      };
-    }
-    return {
-      mode: 'desktop' as const,
-      targetZoom: 12,
-      offsetX: 0,
-      offsetY: -90
-    };
-  };
-
   // Helper function for constrained map movement with precise centering
   const moveMapToMarker = async (lat: number, lng: number, centerId: number) => {
     if (!map) return;
@@ -229,16 +151,9 @@ const Index: React.FC = () => {
     lastCenterIdRef.current = centerId;
     lastMoveAtRef.current = now;
 
-    const pos = getMapPositioning();
-    const currentZoom = map.getZoom() ?? 6;
-    
-    // Constrained zoom: only zoom if current zoom is less than target
-    if (currentZoom < pos.targetZoom) {
-      map.setZoom(pos.targetZoom);
-    }
-
-    // Use precise pixel-based centering
-    await centerWithOffset(map, lat, lng, pos.offsetX, pos.offsetY);
+    const mode = getScreenMode();
+    const latLng = new google.maps.LatLng(lat, lng);
+    await centerMarker(map, latLng, mode);
   };
 
   useEffect(() => {
@@ -348,7 +263,7 @@ const Index: React.FC = () => {
               pixelOffset: new google.maps.Size(0, -10)
             });
 
-            marker.addListener("click", () => {
+            marker.addListener("click", async () => {
               const isSmall = window.innerWidth < 1024;
               
               // Close all info windows
@@ -363,12 +278,13 @@ const Index: React.FC = () => {
               if (isSmall) {
                 // Small screen: open drawer and adjust map
                 setDrawerOpen(true);
-                moveMapToMarker(center.lat, center.lng, center.id);
+                await moveMapToMarker(center.lat, center.lng, center.id);
               } else {
-                // Desktop: open info window and use precise centering
+                // Desktop: open info window and center
                 infoWindow.open(mapInstance, marker);
-                const pos = getMapPositioning();
-                centerWithOffset(mapInstance, center.lat, center.lng, pos.offsetX, pos.offsetY);
+                const mode = getScreenMode();
+                const latLng = new google.maps.LatLng(center.lat, center.lng);
+                await centerMarker(mapInstance, latLng, mode);
               }
             });
 
@@ -413,17 +329,12 @@ const Index: React.FC = () => {
         setDrawerOpen(true);
         await moveMapToMarker(center.lat, center.lng, center.id);
       } else {
-        // Desktop: open info window with constrained zoom
-        const pos = getMapPositioning();
-        const currentZoom = map.getZoom() ?? 6;
-        
-        if (currentZoom < pos.targetZoom) {
-          map.setZoom(pos.targetZoom);
-        }
-        
+        // Desktop: open info window and center
         if (marker && (marker as any).infoWindow) {
           (marker as any).infoWindow.open(map, marker);
-          await centerWithOffset(map, center.lat, center.lng, pos.offsetX, pos.offsetY);
+          const mode = getScreenMode();
+          const latLng = new google.maps.LatLng(center.lat, center.lng);
+          await centerMarker(map, latLng, mode);
         }
       }
     }
@@ -449,7 +360,7 @@ const Index: React.FC = () => {
       YELLOW_GLASS_CENTERS.forEach(center => {
         bounds.extend({ lat: center.lat, lng: center.lng });
       });
-      map.fitBounds(bounds, { top: 48, left: 24, right: 24, bottom: 48 });
+      map.fitBounds(bounds, { top: 48, left: 24, right: 24, bottom: 56 });
     }
   };
 
