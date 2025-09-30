@@ -1,7 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
-import { MapPin, Phone, Clock, Search, Navigation2 } from 'lucide-react';
+import { MapPin, Phone, Clock, Search, Navigation2, X } from 'lucide-react';
 import mapPinIcon from '@/assets/mappin.png';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
 
 interface YellowGlassCenter {
   id: number;
@@ -74,6 +84,8 @@ const Index: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
   // Fonction pour obtenir le zoom adaptatif selon la taille d'écran (plus large)
   const getResponsiveZoom = () => {
@@ -108,6 +120,7 @@ const Index: React.FC = () => {
   // Écouter les changements de taille de fenêtre
   useEffect(() => {
     const handleResize = () => {
+      setIsMobile(window.innerWidth < 1024);
       resizeMap();
     };
 
@@ -225,14 +238,23 @@ const Index: React.FC = () => {
             });
 
             marker.addListener("click", () => {
+              // Close all info windows
               markers.forEach(m => {
                 if ((m as any).infoWindow) {
                   (m as any).infoWindow.close();
                 }
               });
               
-              infoWindow.open(mapInstance, marker);
               setSelectedCenter(center);
+              
+              // Use drawer on mobile/tablet, InfoWindow on desktop
+              if (window.innerWidth < 1024) {
+                setDrawerOpen(true);
+                // Pan to marker with slight offset for better visibility
+                mapInstance.panTo({ lat: center.lat - 0.02, lng: center.lng });
+              } else {
+                infoWindow.open(mapInstance, marker);
+              }
             });
 
             (marker as any).infoWindow = infoWindow;
@@ -261,20 +283,27 @@ const Index: React.FC = () => {
   const handleCenterClick = (center: YellowGlassCenter) => {
     setSelectedCenter(center);
     if (map) {
-      map.panTo({ lat: center.lat, lng: center.lng });
       // Zoom adaptatif pour le focus sur un centre (réduit aussi)
       const focusZoom = window.innerWidth < 768 ? 9 : window.innerWidth < 1024 ? 10 : 12;
       map.setZoom(focusZoom);
       
-      const marker = markers.find(m => m.getTitle() === center.name);
-      if (marker && (marker as any).infoWindow) {
-        (marker as any).infoWindow.open(map, marker);
+      // Use drawer on mobile/tablet, InfoWindow on desktop
+      if (window.innerWidth < 1024) {
+        setDrawerOpen(true);
+        map.panTo({ lat: center.lat - 0.02, lng: center.lng });
+      } else {
+        map.panTo({ lat: center.lat, lng: center.lng });
+        const marker = markers.find(m => m.getTitle() === center.name);
+        if (marker && (marker as any).infoWindow) {
+          (marker as any).infoWindow.open(map, marker);
+        }
       }
     }
   };
 
   const resetView = () => {
     setSelectedCenter(null);
+    setDrawerOpen(false);
     if (map) {
       const resetCenter = getResponsiveCenter();
       const resetZoom = getResponsiveZoom();
@@ -405,8 +434,8 @@ const Index: React.FC = () => {
           </div>
         </div>
 
-        {/* Map Container - Toujours visible avec forçage du redimensionnement */}
-        <div className="flex-1 relative order-1 lg:order-2" style={{ height: '320px' }} data-mobile-height="320px" data-desktop-height="100vh">
+        {/* Map Container - Responsive height */}
+        <div className="flex-1 relative order-1 lg:order-2 h-[45vh] md:h-[50vh] lg:h-screen">
           {isLoading && (
             <div className="absolute inset-0 bg-white flex items-center justify-center z-10">
               <div className="text-center">
@@ -415,10 +444,104 @@ const Index: React.FC = () => {
               </div>
             </div>
           )}
-          <div ref={mapRef} className="w-full h-full" style={{ minHeight: '320px' }} />
+          <div ref={mapRef} className="w-full h-full" />
         </div>
         
       </div>
+
+      {/* Mobile/Tablet Drawer for center details */}
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <DrawerContent className="h-[70vh] md:h-[75vh] lg:hidden">
+          <DrawerHeader className="text-left pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-yellow-400 w-10 h-6 rounded-lg flex items-center justify-center border-2 border-gray-800">
+                  <div className="bg-gray-800 w-3 h-0.5 rounded-full transform rotate-12"></div>
+                </div>
+                <DrawerTitle className="text-xl font-bold text-gray-900">
+                  {selectedCenter?.name}
+                </DrawerTitle>
+              </div>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <X className="h-5 w-5" />
+                </Button>
+              </DrawerClose>
+            </div>
+            <DrawerDescription className="sr-only">
+              Détails du centre {selectedCenter?.name}
+            </DrawerDescription>
+          </DrawerHeader>
+
+          <div className="px-6 overflow-y-auto flex-1">
+            {selectedCenter && (
+              <div className="space-y-5 pb-6">
+                {/* Address */}
+                <div className="space-y-1">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-gray-900 text-base">{selectedCenter.address}</p>
+                      <p className="text-gray-600 text-sm">{selectedCenter.postalCode} {selectedCenter.city}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div className="flex items-center gap-3">
+                  <Phone className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                  <a 
+                    href={`tel:${selectedCenter.phone.replace(/\s/g, '')}`}
+                    className="font-semibold text-yellow-600 text-base hover:text-yellow-700"
+                  >
+                    {selectedCenter.phone}
+                  </a>
+                </div>
+
+                {/* Hours */}
+                <div className="space-y-1">
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Horaires</p>
+                      <p className="text-gray-600 text-sm">{selectedCenter.hours}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Services */}
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Services disponibles
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCenter.services.map((service, index) => (
+                      <span
+                        key={index}
+                        className="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full font-medium"
+                      >
+                        {service}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DrawerFooter className="pt-4 border-t">
+            <Button 
+              className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-base h-12 rounded-full"
+              onClick={() => {
+                // Handle "En savoir plus" action
+                console.log('En savoir plus:', selectedCenter?.name);
+              }}
+            >
+              En savoir plus
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };
