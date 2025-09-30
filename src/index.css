@@ -42,16 +42,9 @@ body {
   background: var(--yellow-glass-dark);
 }
 
-/* Responsive mobile - Carte en haut, sidebar en bas */
-@media (max-width: 767px) {
-  .h-80 {
-    height: 320px !important;
-  }
-  
-  /* Assure que la sidebar prend le reste de l'espace */
-  .md\:h-full {
-    max-height: calc(100vh - 320px);
-  }
+/* Transition fluide pour le mobile */
+.mobile-transition {
+  transition: all 0.3s ease-in-out;
 }
 
 /* Animation pour les pins */

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
-import { MapPin, Phone, Clock, Search, Navigation2 } from 'lucide-react';
+import { MapPin, Phone, Clock, Search, Navigation2, Map } from 'lucide-react';
 import mapPinIcon from '@/assets/mappin.png';
 
 interface YellowGlassCenter {
@@ -74,6 +74,7 @@ const Index: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  const [showMap, setShowMap] = useState(false); // État pour afficher/masquer la carte sur mobile
 
   useEffect(() => {
     const initMap = async () => {
@@ -200,6 +201,7 @@ const Index: React.FC = () => {
 
   const handleCenterClick = (center: YellowGlassCenter) => {
     setSelectedCenter(center);
+    setShowMap(true); // Afficher la carte sur mobile quand on clique sur un centre
     if (map) {
       map.panTo({ lat: center.lat, lng: center.lng });
       map.setZoom(12);
@@ -231,12 +233,12 @@ const Index: React.FC = () => {
   );
 
   return (
-    <div className="bg-gray-50" style={{ fontFamily: "'Red Hat Display', sans-serif" }}>
-      {/* Layout responsive unifié */}
-      <div className="flex flex-col md:flex-row h-screen">
-        
-        {/* Sidebar - Desktop: à gauche, Mobile: en bas */}
-        <div className="w-full md:w-96 bg-white shadow-lg overflow-y-auto order-2 md:order-1">
+    <div className="bg-gray-50 min-h-screen" style={{ fontFamily: "'Red Hat Display', sans-serif" }}>
+      
+      {/* Layout Desktop */}
+      <div className="hidden lg:flex h-screen">
+        {/* Sidebar Desktop */}
+        <div className="w-96 bg-white shadow-lg overflow-y-auto">
           <div className="p-6">
             {/* Section recherche */}
             <div className="mb-6">
@@ -341,8 +343,8 @@ const Index: React.FC = () => {
           </div>
         </div>
 
-        {/* Map Container - Desktop: à droite, Mobile: en haut */}
-        <div className="flex-1 relative order-1 md:order-2 h-80 md:h-full">
+        {/* Map Container Desktop */}
+        <div className="flex-1 relative">
           {isLoading && (
             <div className="absolute inset-0 bg-white flex items-center justify-center z-10">
               <div className="text-center">
@@ -353,7 +355,148 @@ const Index: React.FC = () => {
           )}
           <div ref={mapRef} className="w-full h-full" />
         </div>
-        
+      </div>
+
+      {/* Layout Mobile/Tablette */}
+      <div className="lg:hidden">
+        {/* Vue Liste Mobile */}
+        {!showMap && (
+          <div className="bg-white min-h-screen">
+            <div className="p-4">
+              {/* Header mobile avec bouton carte */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Nos centres ({YELLOW_GLASS_CENTERS.length})
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    Choisissez un centre pour le localiser
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowMap(true)}
+                  className="bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg font-semibold text-sm flex items-center gap-2"
+                >
+                  <Map size={16} />
+                  Carte
+                </button>
+              </div>
+              
+              {/* Barre de recherche mobile */}
+              <div className="relative mb-4">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Ville, Code postal..."
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg text-sm leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              
+              {/* Bouton géolocalisation mobile */}
+              <button className="w-full bg-yellow-400 text-gray-900 px-4 py-3 rounded-lg hover:bg-yellow-500 transition-colors font-semibold text-sm flex items-center justify-center gap-2 mb-6">
+                📍 Me géolocaliser
+              </button>
+
+              {/* Liste des centres mobile */}
+              <div className="space-y-4">
+                {filteredCenters.map((center) => (
+                  <div
+                    key={center.id}
+                    className="p-4 border-2 rounded-xl cursor-pointer transition-all hover:shadow-md border-gray-200 hover:border-yellow-300"
+                    onClick={() => handleCenterClick(center)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="font-bold text-gray-900 text-lg">
+                        {center.name}
+                      </h3>
+                      <span className="bg-yellow-400 text-gray-800 text-xs px-2 py-1 rounded-full font-bold">
+                        {center.id}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm text-gray-600 mb-4">
+                      <div className="flex items-start gap-2">
+                        <MapPin size={14} className="mt-0.5 flex-shrink-0 text-yellow-600" />
+                        <div>
+                          <p className="font-medium">{center.address}</p>
+                          <p>{center.postalCode} {center.city}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Phone size={14} className="flex-shrink-0 text-yellow-600" />
+                        <span className="font-medium">{center.phone}</span>
+                      </div>
+                      
+                      <div className="flex items-start gap-2">
+                        <Clock size={14} className="mt-0.5 flex-shrink-0 text-yellow-600" />
+                        <span className="text-xs">{center.hours}</span>
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <div className="flex flex-wrap gap-1">
+                        {center.services.map((service, index) => (
+                          <span
+                            key={index}
+                            className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+                          >
+                            {service}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <button className="w-full bg-yellow-400 text-gray-800 text-sm px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors font-bold">
+                      En savoir plus
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Vue Carte Mobile */}
+        {showMap && (
+          <div className="h-screen flex flex-col">
+            {/* Header carte mobile */}
+            <div className="bg-white p-4 shadow-sm flex items-center justify-between">
+              <button
+                onClick={() => setShowMap(false)}
+                className="text-yellow-600 hover:text-yellow-700 flex items-center gap-2 font-semibold"
+              >
+                ← Retour à la liste
+              </button>
+              {selectedCenter && (
+                <button
+                  onClick={resetView}
+                  className="text-yellow-600 hover:text-yellow-700 flex items-center gap-2 font-semibold text-sm"
+                >
+                  <Navigation2 size={16} />
+                  Vue générale
+                </button>
+              )}
+            </div>
+            
+            {/* Carte plein écran mobile */}
+            <div className="flex-1 relative">
+              {isLoading && (
+                <div className="absolute inset-0 bg-white flex items-center justify-center z-10">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-400 border-t-transparent mx-auto mb-4"></div>
+                    <p className="text-gray-600 font-medium text-sm">Chargement de la carte...</p>
+                  </div>
+                </div>
+              )}
+              <div ref={mapRef} className="w-full h-full" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
