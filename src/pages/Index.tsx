@@ -75,11 +75,11 @@ const Index: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
 
-  // Fonction pour obtenir le zoom adaptatif selon la taille d'écran
+  // Fonction pour obtenir le zoom adaptatif selon la taille d'écran (plus large)
   const getResponsiveZoom = () => {
     const width = window.innerWidth;
-    if (width < 768) return 5.5; // Mobile - zoom plus large
-    if (width < 1024) return 5.8; // Tablette - zoom intermédiaire
+    if (width < 768) return 4.8; // Mobile - zoom beaucoup plus large
+    if (width < 1024) return 5.2; // Tablette - zoom plus large
     return 6.2; // Desktop - zoom normal
   };
 
@@ -262,8 +262,8 @@ const Index: React.FC = () => {
     setSelectedCenter(center);
     if (map) {
       map.panTo({ lat: center.lat, lng: center.lng });
-      // Zoom adaptatif pour le focus sur un centre
-      const focusZoom = window.innerWidth < 768 ? 10 : 12;
+      // Zoom adaptatif pour le focus sur un centre (réduit aussi)
+      const focusZoom = window.innerWidth < 768 ? 9 : window.innerWidth < 1024 ? 10 : 12;
       map.setZoom(focusZoom);
       
       const marker = markers.find(m => m.getTitle() === center.name);
