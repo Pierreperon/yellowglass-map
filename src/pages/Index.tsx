@@ -192,47 +192,215 @@ const Index: React.FC = () => {
               map: mapInstance,
               title: center.name,
               icon: {
-                url: mapPinIcon,
-                scaledSize: new google.maps.Size(50, 65),
-                anchor: new google.maps.Point(25, 65)
+                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                  <svg width="60" height="80" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.3"/>
+                      </filter>
+                    </defs>
+                    <!-- Pin shape -->
+                    <path d="M30 5 C40 5, 50 15, 50 25 C50 35, 30 65, 30 65 C30 65, 10 35, 10 25 C10 15, 20 5, 30 5 Z" fill="#FFD700" stroke="#333" stroke-width="2" filter="url(#shadow)"/>
+                    <!-- Yellow Glass logo inside -->
+                    <rect x="15" y="15" width="30" height="15" rx="7.5" fill="#333333"/>
+                    <rect x="18" y="18" width="24" height="9" rx="4.5" fill="#FFD700"/>
+                    <rect x="20" y="20" width="8" height="2" rx="1" fill="#333333" transform="rotate(15 24 21)"/>
+                  </svg>
+                `),
+                scaledSize: new google.maps.Size(60, 80),
+                anchor: new google.maps.Point(30, 65)
               }
             });
 
+            // Info window avec contenu amélioré et mieux stylé
             const infoWindow = new google.maps.InfoWindow({
               content: `
-                <div style="padding: 15px; min-width: 280px; font-family: 'Red Hat Display', sans-serif;">
-                  <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                    <div style="background: #FFD700; width: 35px; height: 20px; border-radius: 10px; margin-right: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #333;">
-                      <div style="background: #333; width: 12px; height: 2px; border-radius: 1px; transform: rotate(15deg);"></div>
+                <div style="
+                  padding: 20px; 
+                  min-width: 300px; 
+                  max-width: 350px;
+                  font-family: 'Red Hat Display', -apple-system, BlinkMacSystemFont, sans-serif;
+                  line-height: 1.4;
+                  color: #333;
+                ">
+                  <!-- Header avec logo -->
+                  <div style="
+                    display: flex; 
+                    align-items: center; 
+                    margin-bottom: 15px;
+                    padding-bottom: 10px;
+                    border-bottom: 2px solid #FFD700;
+                  ">
+                    <div style="
+                      background: #FFD700; 
+                      width: 40px; 
+                      height: 24px; 
+                      border-radius: 12px; 
+                      margin-right: 12px; 
+                      display: flex; 
+                      align-items: center; 
+                      justify-content: center; 
+                      border: 2px solid #333;
+                      flex-shrink: 0;
+                    ">
+                      <div style="
+                        background: #333; 
+                        width: 16px; 
+                        height: 3px; 
+                        border-radius: 2px; 
+                        transform: rotate(15deg);
+                      "></div>
                     </div>
-                    <h3 style="margin: 0; color: #333; font-size: 18px; font-weight: 700;">${center.name}</h3>
+                    <h3 style="
+                      margin: 0; 
+                      color: #333; 
+                      font-size: 18px; 
+                      font-weight: 700;
+                      line-height: 1.2;
+                    ">${center.name}</h3>
                   </div>
-                  <div style="margin-bottom: 8px;">
-                    <p style="margin: 0; font-size: 14px; color: #555; font-weight: 500;">${center.address}</p>
-                    <p style="margin: 0; font-size: 14px; color: #555;">${center.postalCode} ${center.city}</p>
-                  </div>
-                  <div style="margin-bottom: 8px;">
-                    <p style="margin: 0; font-size: 14px; color: #FFD700; font-weight: 600;">📞 ${center.phone}</p>
-                  </div>
+                  
+                  <!-- Adresse -->
                   <div style="margin-bottom: 12px;">
-                    <p style="margin: 0; font-size: 13px; color: #666;"><strong>Horaires:</strong> ${center.hours}</p>
+                    <div style="
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 8px;
+                      margin-bottom: 4px;
+                    ">
+                      <span style="color: #FFD700; font-size: 16px;">📍</span>
+                      <div>
+                        <p style="
+                          margin: 0; 
+                          font-size: 15px; 
+                          color: #333; 
+                          font-weight: 600;
+                          line-height: 1.3;
+                        ">${center.address}</p>
+                        <p style="
+                          margin: 2px 0 0 0; 
+                          font-size: 15px; 
+                          color: #666;
+                          font-weight: 500;
+                        ">${center.postalCode} ${center.city}</p>
+                      </div>
+                    </div>
                   </div>
-                  <button style="background: #FFD700; color: #333; border: none; padding: 10px 20px; border-radius: 25px; font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'Red Hat Display', sans-serif;">
+                  
+                  <!-- Téléphone -->
+                  <div style="margin-bottom: 12px;">
+                    <div style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                    ">
+                      <span style="color: #FFD700; font-size: 16px;">📞</span>
+                      <a href="tel:${center.phone.replace(/\s/g, '')}" style="
+                        margin: 0; 
+                        font-size: 15px; 
+                        color: #FFD700; 
+                        font-weight: 600;
+                        text-decoration: none;
+                      ">${center.phone}</a>
+                    </div>
+                  </div>
+                  
+                  <!-- Horaires -->
+                  <div style="margin-bottom: 15px;">
+                    <div style="
+                      display: flex;
+                      align-items: flex-start;
+                      gap: 8px;
+                    ">
+                      <span style="color: #FFD700; font-size: 16px;">🕒</span>
+                      <div>
+                        <p style="
+                          margin: 0; 
+                          font-size: 13px; 
+                          color: #666;
+                          line-height: 1.3;
+                        "><strong>Horaires:</strong></p>
+                        <p style="
+                          margin: 2px 0 0 0; 
+                          font-size: 13px; 
+                          color: #666;
+                        ">${center.hours}</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Services -->
+                  <div style="margin-bottom: 15px;">
+                    <p style="
+                      margin: 0 0 6px 0; 
+                      font-size: 12px; 
+                      color: #888; 
+                      font-weight: 600;
+                      text-transform: uppercase;
+                      letter-spacing: 0.5px;
+                    ">Services disponibles</p>
+                    <div style="
+                      display: flex;
+                      flex-wrap: wrap;
+                      gap: 4px;
+                    ">
+                      ${center.services.map(service => `
+                        <span style="
+                          background: #f0f0f0;
+                          color: #666;
+                          font-size: 11px;
+                          padding: 3px 8px;
+                          border-radius: 12px;
+                          white-space: nowrap;
+                        ">${service}</span>
+                      `).join('')}
+                    </div>
+                  </div>
+                  
+                  <!-- Bouton d'action -->
+                  <button onclick="alert('Redirection vers la fiche du centre ${center.name}')" style="
+                    background: linear-gradient(135deg, #FFD700 0%, #FFC107 100%);
+                    color: #333; 
+                    border: none; 
+                    padding: 12px 24px; 
+                    border-radius: 25px; 
+                    font-weight: 700; 
+                    cursor: pointer; 
+                    font-size: 14px; 
+                    font-family: 'Red Hat Display', sans-serif;
+                    width: 100%;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+                  " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(255, 215, 0, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(255, 215, 0, 0.3)'">
                     En savoir plus
                   </button>
                 </div>
-              `
+              `,
+              maxWidth: 400,
+              pixelOffset: new google.maps.Size(0, -10)
             });
 
+            // Gestionnaire de clic sur le marqueur
             marker.addListener("click", () => {
+              // Fermer toutes les autres info windows
               markers.forEach(m => {
                 if ((m as any).infoWindow) {
                   (m as any).infoWindow.close();
                 }
               });
               
+              // Ouvrir l'info window de ce marqueur
               infoWindow.open(mapInstance, marker);
               setSelectedCenter(center);
+              
+              // Ajuster la vue pour bien voir l'info window
+              setTimeout(() => {
+                const currentZoom = mapInstance.getZoom() || 10;
+                if (currentZoom < 10) {
+                  mapInstance.setZoom(10);
+                }
+                mapInstance.panTo({ lat: center.lat + 0.01, lng: center.lng });
+              }, 100);
             });
 
             (marker as any).infoWindow = infoWindow;
