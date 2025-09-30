@@ -405,10 +405,10 @@ const Index: React.FC = () => {
   return (
     <div className="bg-gray-50 min-h-screen" style={{ fontFamily: "'Red Hat Display', sans-serif" }}>
       {/* Layout unifié responsive */}
-      <div className="flex flex-col lg:flex-row min-h-screen">
+      <div className="flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden">
         
         {/* Sidebar - Toujours visible */}
-        <div className="w-full lg:w-96 bg-white shadow-lg overflow-y-auto order-2 lg:order-1">
+        <div className="w-full lg:w-96 bg-white shadow-lg overflow-y-auto order-2 lg:order-1 lg:h-screen">
           <div className="p-4 lg:p-6">
             {/* Section recherche */}
             <div className="mb-6">
@@ -514,7 +514,7 @@ const Index: React.FC = () => {
         </div>
 
         {/* Map Container - Toujours visible avec forçage du redimensionnement */}
-        <div className="flex-1 relative order-1 lg:order-2" style={{ height: '320px' }} data-mobile-height="320px" data-desktop-height="100vh">
+        <div className="flex-1 relative order-1 lg:order-2 lg:h-screen lg:overflow-hidden" style={{ height: '320px' }} data-mobile-height="320px" data-desktop-height="100vh">
           {isLoading && (
             <div className="absolute inset-0 bg-white flex items-center justify-center z-10">
               <div className="text-center">
