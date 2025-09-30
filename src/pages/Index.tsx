@@ -78,6 +78,8 @@ const Index: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 1024);
   const lastInteractionRef = useRef<{ centerId: number; timestamp: number } | null>(null);
+  const lastCenterIdRef = useRef<number | null>(null);
+  const lastMoveAtRef = useRef<number>(0);
 
   // Fonction pour obtenir le zoom adaptatif selon la taille d'écran (plus large)
   const getResponsiveZoom = () => {
@@ -130,19 +132,43 @@ const Index: React.FC = () => {
     }
   }, [map, isLoading]);
 
+  // Helper to wait for projection to be ready
+  const waitProjection = async (map: google.maps.Map, tries = 6): Promise<google.maps.Projection | null> => {
+    return new Promise((resolve) => {
+      const tick = () => {
+        const proj = map.getProjection?.();
+        if (proj || tries <= 0) {
+          resolve(proj || null);
+          return;
+        }
+        setTimeout(() => {
+          waitProjection(map, tries - 1).then(resolve);
+        }, 50);
+      };
+      tick();
+    });
+  };
+
   // Helper function to center marker with pixel-perfect offset
-  const centerWithOffset = (map: google.maps.Map, lat: number, lng: number, offsetX: number, offsetY: number) => {
-    const scale = Math.pow(2, map.getZoom() || 6);
-    const proj = map.getProjection();
+  const centerWithOffset = async (map: google.maps.Map, lat: number, lng: number, offsetX: number, offsetY: number) => {
+    const proj = await waitProjection(map);
+    const latLng = new google.maps.LatLng(lat, lng);
+    
     if (!proj) {
-      map.setCenter({ lat, lng });
+      // Fallback to panTo + panBy
+      map.panTo(latLng);
+      requestAnimationFrame(() => {
+        setTimeout(() => map.panBy(offsetX, offsetY), 50);
+      });
       return;
     }
     
-    const latLng = new google.maps.LatLng(lat, lng);
+    const zoom = map.getZoom() ?? 10;
+    const scale = Math.pow(2, zoom);
     const worldPoint = proj.fromLatLngToPoint(latLng);
+    
     if (!worldPoint) {
-      map.setCenter({ lat, lng });
+      map.setCenter(latLng);
       return;
     }
     
@@ -152,52 +178,67 @@ const Index: React.FC = () => {
       worldPoint.y - pixelOffset.y
     );
     const targetLatLng = proj.fromPointToLatLng(targetPoint);
+    
     if (targetLatLng) {
       map.setCenter(targetLatLng);
     }
   };
 
+  // Helper to get positioning based on screen size
+  const getMapPositioning = () => {
+    const width = window.innerWidth;
+    if (width < 768) {
+      return {
+        mode: 'mobile' as const,
+        targetZoom: 10,
+        offsetX: 0,
+        offsetY: Math.round(window.innerHeight * 0.26)
+      };
+    }
+    if (width < 1024) {
+      return {
+        mode: 'tablet' as const,
+        targetZoom: 11,
+        offsetX: 0,
+        offsetY: Math.round(window.innerHeight * 0.20)
+      };
+    }
+    return {
+      mode: 'desktop' as const,
+      targetZoom: 12,
+      offsetX: 0,
+      offsetY: -90
+    };
+  };
+
   // Helper function for constrained map movement with precise centering
-  const moveMapToMarker = (lat: number, lng: number, centerId: number, mode: 'mobile' | 'tablet' | 'desktop') => {
+  const moveMapToMarker = async (lat: number, lng: number, centerId: number) => {
     if (!map) return;
 
-    // Debounce: skip if same center clicked within 500ms
+    // Debounce: skip if same center clicked within 400ms
     const now = Date.now();
-    if (lastInteractionRef.current && 
-        lastInteractionRef.current.centerId === centerId && 
-        now - lastInteractionRef.current.timestamp < 500) {
+    if (lastCenterIdRef.current === centerId && now - lastMoveAtRef.current < 400) {
       return;
     }
-    lastInteractionRef.current = { centerId, timestamp: now };
+    
+    // Skip if drawer already open for this center
+    if (isSmallScreen && drawerOpen && lastCenterIdRef.current === centerId) {
+      return;
+    }
+    
+    lastCenterIdRef.current = centerId;
+    lastMoveAtRef.current = now;
 
+    const pos = getMapPositioning();
+    const currentZoom = map.getZoom() ?? 6;
+    
     // Constrained zoom: only zoom if current zoom is less than target
-    const currentZoom = map.getZoom() || 6;
-    let targetZoom = currentZoom;
-    
-    if (mode === 'mobile' && currentZoom < 10) {
-      targetZoom = 10;
-    } else if (mode === 'tablet' && currentZoom < 11) {
-      targetZoom = 11;
+    if (currentZoom < pos.targetZoom) {
+      map.setZoom(pos.targetZoom);
     }
-    
-    if (targetZoom !== currentZoom) {
-      map.setZoom(targetZoom);
-    }
-
-    // Calculate pixel offsets based on mode
-    const offsetX = 0;
-    const offsetY = mode === 'mobile' 
-      ? Math.round(window.innerHeight * 0.28)
-      : mode === 'tablet'
-      ? Math.round(window.innerHeight * 0.22)
-      : -90; // desktop
 
     // Use precise pixel-based centering
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        centerWithOffset(map, lat, lng, offsetX, offsetY);
-      }, 50);
-    });
+    await centerWithOffset(map, lat, lng, pos.offsetX, pos.offsetY);
   };
 
   useEffect(() => {
@@ -320,23 +361,14 @@ const Index: React.FC = () => {
               setSelectedCenter(center);
               
               if (isSmall) {
-                // Skip if drawer already open for this center
-                if (drawerOpen && selectedCenter?.id === center.id) {
-                  return;
-                }
-                
                 // Small screen: open drawer and adjust map
                 setDrawerOpen(true);
-                const mode = window.innerWidth < 768 ? 'mobile' : 'tablet';
-                moveMapToMarker(center.lat, center.lng, center.id, mode);
+                moveMapToMarker(center.lat, center.lng, center.id);
               } else {
                 // Desktop: open info window and use precise centering
                 infoWindow.open(mapInstance, marker);
-                requestAnimationFrame(() => {
-                  setTimeout(() => {
-                    centerWithOffset(mapInstance, center.lat, center.lng, 0, -90);
-                  }, 50);
-                });
+                const pos = getMapPositioning();
+                centerWithOffset(mapInstance, center.lat, center.lng, pos.offsetX, pos.offsetY);
               }
             });
 
@@ -363,12 +395,7 @@ const Index: React.FC = () => {
     initMap();
   }, []);
 
-  const handleCenterClick = (center: YellowGlassCenter) => {
-    // Skip if drawer already open for this center
-    if (isSmallScreen && drawerOpen && selectedCenter?.id === center.id) {
-      return;
-    }
-
+  const handleCenterClick = async (center: YellowGlassCenter) => {
     setSelectedCenter(center);
     
     if (map) {
@@ -384,23 +411,19 @@ const Index: React.FC = () => {
       if (isSmallScreen) {
         // Small screen: open drawer
         setDrawerOpen(true);
-        const mode = window.innerWidth < 768 ? 'mobile' : 'tablet';
-        moveMapToMarker(center.lat, center.lng, center.id, mode);
+        await moveMapToMarker(center.lat, center.lng, center.id);
       } else {
         // Desktop: open info window with constrained zoom
-        const currentZoom = map.getZoom() || 6;
-        if (currentZoom < 12) {
-          map.setZoom(12);
+        const pos = getMapPositioning();
+        const currentZoom = map.getZoom() ?? 6;
+        
+        if (currentZoom < pos.targetZoom) {
+          map.setZoom(pos.targetZoom);
         }
-        map.panTo({ lat: center.lat, lng: center.lng });
         
         if (marker && (marker as any).infoWindow) {
           (marker as any).infoWindow.open(map, marker);
-          requestAnimationFrame(() => {
-            setTimeout(() => {
-              centerWithOffset(map, center.lat, center.lng, 0, -90);
-            }, 50);
-          });
+          await centerWithOffset(map, center.lat, center.lng, pos.offsetX, pos.offsetY);
         }
       }
     }
@@ -410,6 +433,9 @@ const Index: React.FC = () => {
     setSelectedCenter(null);
     setDrawerOpen(false);
     lastInteractionRef.current = null;
+    lastCenterIdRef.current = null;
+    lastMoveAtRef.current = 0;
+    
     if (map) {
       // Close all info windows
       markers.forEach(m => {
@@ -418,12 +444,12 @@ const Index: React.FC = () => {
         }
       });
       
-      // Fit bounds to show all centers
+      // Fit bounds to show all centers with generous padding
       const bounds = new google.maps.LatLngBounds();
       YELLOW_GLASS_CENTERS.forEach(center => {
         bounds.extend({ lat: center.lat, lng: center.lng });
       });
-      map.fitBounds(bounds, { top: 32, right: 16, bottom: 32, left: 16 });
+      map.fitBounds(bounds, { top: 48, left: 24, right: 24, bottom: 48 });
     }
   };
 
@@ -556,17 +582,15 @@ const Index: React.FC = () => {
           )}
           <div ref={mapRef} className="w-full h-full" style={{ minHeight: '320px' }} />
           
-          {/* Floating Reset View Button */}
-          {selectedCenter && (
-            <button
-              onClick={resetView}
-              className="absolute bottom-3 right-3 z-10 bg-white shadow-lg hover:shadow-xl px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-sm font-semibold text-gray-900 border border-gray-200 hover:bg-gray-50"
-              aria-label="Voir tous les centres"
-            >
-              <Navigation2 size={16} className="text-yellow-600" />
-              Voir tous les centres
-            </button>
-          )}
+          {/* Persistent Floating Reset View Button */}
+          <button
+            onClick={resetView}
+            className="absolute bottom-3 right-3 z-50 bg-white shadow-lg hover:shadow-xl px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-sm font-semibold text-gray-900 border border-gray-200 hover:bg-gray-50"
+            aria-label="Voir tous les centres"
+          >
+            <Navigation2 size={16} className="text-yellow-600" />
+            Voir tous les centres
+          </button>
         </div>
         
       </div>
