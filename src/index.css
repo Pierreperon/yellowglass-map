@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 123 Pare-Brise Automotive Service Design System */
+@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Yellow Glass Design System */
 
 @layer base {
   :root {
@@ -112,7 +114,8 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
+    font-family: 'Red Hat Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 }
 

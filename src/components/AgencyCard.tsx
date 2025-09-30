@@ -57,7 +57,7 @@ export const AgencyCard = ({ agency, isSelected, onClick }: AgencyCardProps) => 
       
       <button className="btn-hero text-xs w-full">
         <Calendar size={14} className="mr-1" />
-        Prendre rendez-vous
+        En savoir plus
       </button>
     </div>
   );

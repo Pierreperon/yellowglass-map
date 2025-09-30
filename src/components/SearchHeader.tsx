@@ -25,64 +25,60 @@ export const SearchHeader = ({ searchTerm, onSearchChange, onGeolocation }: Sear
   };
 
   return (
-    <div className="bg-white shadow-lg relative overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10"></div>
-      
-      <div className="relative max-w-7xl mx-auto px-4 py-8">
-        {/* Logo Yellow Glass corrigé */}
-        <div className="flex justify-center mb-6 animate-fade-in-up">
-          <div className="flex items-center logo-container">
-            <span className="text-4xl font-bold text-gray-800 mr-1">yell</span>
-            <div className="relative">
-              {/* Forme ovale jaune du logo */}
-              <div className="bg-yellow-400 rounded-full w-16 h-8 flex items-center justify-center border-2 border-yellow-400 logo-oval">
-                <div className="bg-yellow-400 w-6 h-2 rounded-full transform rotate-12"></div>
+    <header className="bg-gray-900 text-white">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Logo Yellow Glass blanc sur fond noir */}
+        <div className="flex justify-center mb-8 animate-fade-in-up">
+          <div className="flex items-center space-x-2">
+            <span className="text-4xl font-bold text-white">yell</span>
+            {/* Logo ovale blanc */}
+            <div className="relative mx-2">
+              <div className="bg-white rounded-full w-16 h-8 flex items-center justify-center">
+                <div className="bg-white w-10 h-3 rounded-full border-2 border-gray-900 relative">
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-12">
+                    <div className="bg-gray-900 w-6 h-1.5 rounded-full"></div>
+                  </div>
+                </div>
               </div>
             </div>
-            <span className="text-4xl font-bold text-gray-800 ml-1">w</span>
+            <span className="text-4xl font-bold text-white">w</span>
             <div className="ml-3">
-              <div className="text-2xl font-bold text-gray-800 leading-none">glass</div>
+              <div className="text-2xl font-bold text-white">glass</div>
             </div>
           </div>
         </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2 animate-fade-in-up">
-            Trouvez votre centre Yellow Glass
-          </h1>
-          <p className="text-lg text-muted-foreground animate-fade-in-up" style={{animationDelay: '0.1s'}}>
-            Spécialiste du remplacement et réparation de pare-brise à domicile
-          </p>
+        <h1 className="text-4xl font-bold text-center mb-3 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          Trouvez votre centre Yellow Glass
+        </h1>
+        <p className="text-center text-gray-300 mb-8 text-lg animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          Spécialiste du remplacement et réparation de pare-brise à domicile
+        </p>
+        
+        {/* Search Bar */}
+        <div className="max-w-md mx-auto relative animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Ville, Code postal..."
+            className="block w-full pl-12 pr-4 py-4 border border-gray-600 rounded-full leading-5 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+          />
         </div>
         
-        <div className="max-w-2xl mx-auto space-y-6">
-          {/* Search Bar */}
-          <div className="relative animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-primary" />
-            </div>
-            <input
-              type="text"
-              placeholder="Ville, Code postal..."
-              className="search-input"
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
-          </div>
-          
-          {/* Geolocation Button */}
-          <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <button 
-              onClick={handleGeolocation}
-              className="btn-hero inline-flex items-center"
-            >
-              <Navigation2 size={18} className="mr-2" />
-              📍 Me géolocaliser
-            </button>
-          </div>
+        <div className="text-center mt-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+          <button 
+            onClick={handleGeolocation}
+            className="bg-yellow-400 text-gray-900 px-8 py-4 rounded-full hover:bg-yellow-500 transition-colors font-bold text-lg inline-flex items-center gap-2"
+          >
+            <Navigation2 size={18} />
+            📍 Me géolocaliser
+          </button>
         </div>
       </div>
-    </div>
+    </header>
   );
 };

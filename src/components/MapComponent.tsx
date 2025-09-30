@@ -74,7 +74,7 @@ export const MapComponent = ({ agencies, selectedAgency, onAgencySelect }: MapCo
 
           setMap(mapInstance);
 
-          // Create markers
+          // Create markers with custom Yellow Glass pins
           const newMarkers = agencies.map((agency) => {
             const marker = new google.maps.Marker({
               position: { lat: agency.lat, lng: agency.lng },
@@ -82,38 +82,46 @@ export const MapComponent = ({ agencies, selectedAgency, onAgencySelect }: MapCo
               title: agency.name,
               icon: {
                 url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                  <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="25" cy="25" r="22" fill="#FFD700" stroke="#333333" stroke-width="3"/>
-                    <circle cx="25" cy="25" r="15" fill="#333333"/>
-                    <text x="25" y="31" text-anchor="middle" fill="#FFD700" font-family="Arial, sans-serif" font-size="14" font-weight="bold">${agency.id}</text>
+                  <svg width="60" height="80" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <filter id="shadow${agency.id}" x="-50%" y="-50%" width="200%" height="200%">
+                        <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.3"/>
+                      </filter>
+                    </defs>
+                    <!-- Pin shape -->
+                    <path d="M30 5 C40 5, 50 15, 50 25 C50 35, 30 65, 30 65 C30 65, 10 35, 10 25 C10 15, 20 5, 30 5 Z" fill="#FFD700" stroke="#333" stroke-width="2" filter="url(#shadow${agency.id})"/>
+                    <!-- Yellow Glass logo inside -->
+                    <rect x="15" y="15" width="30" height="15" rx="7.5" fill="#333333"/>
+                    <rect x="18" y="18" width="24" height="9" rx="4.5" fill="#FFD700"/>
+                    <rect x="20" y="20" width="8" height="2" rx="1" fill="#333333" transform="rotate(15 24 21)"/>
                   </svg>
                 `),
-                scaledSize: new google.maps.Size(50, 50),
-                anchor: new google.maps.Point(25, 25)
+                scaledSize: new google.maps.Size(60, 80),
+                anchor: new google.maps.Point(30, 65)
               }
             });
 
             const infoWindow = new google.maps.InfoWindow({
               content: `
-                <div style="padding: 15px; min-width: 280px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+                <div style="padding: 15px; min-width: 280px; font-family: 'Red Hat Display', sans-serif;">
                   <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                    <div style="background: #FFD700; width: 30px; height: 20px; border-radius: 15px; margin-right: 10px; display: flex; align-items: center; justify-content: center;">
-                      <span style="color: #333; font-weight: bold; font-size: 12px;">YG</span>
+                    <div style="background: #FFD700; width: 35px; height: 20px; border-radius: 10px; margin-right: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #333;">
+                      <div style="background: #333; width: 12px; height: 2px; border-radius: 1px; transform: rotate(15deg);"></div>
                     </div>
-                    <h3 style="margin: 0; color: #333; font-size: 18px; font-weight: bold;">${agency.name}</h3>
+                    <h3 style="margin: 0; color: #333; font-size: 18px; font-weight: 700;">${agency.name}</h3>
                   </div>
                   <div style="margin-bottom: 8px;">
-                    <p style="margin: 0; font-size: 14px; color: #555;"><strong>${agency.address}</strong></p>
+                    <p style="margin: 0; font-size: 14px; color: #555; font-weight: 500;">${agency.address}</p>
                     <p style="margin: 0; font-size: 14px; color: #555;">${agency.postalCode} ${agency.city}</p>
                   </div>
                   <div style="margin-bottom: 8px;">
-                    <p style="margin: 0; font-size: 14px; color: #FFD700;"><strong>📞 ${agency.phone}</strong></p>
+                    <p style="margin: 0; font-size: 14px; color: #FFD700; font-weight: 600;">📞 ${agency.phone}</p>
                   </div>
                   <div style="margin-bottom: 12px;">
                     <p style="margin: 0; font-size: 13px; color: #666;"><strong>Horaires:</strong> ${agency.hours}</p>
                   </div>
-                  <button style="background: #FFD700; color: #333; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px;">
-                    Prendre rendez-vous
+                  <button style="background: #FFD700; color: #333; border: none; padding: 10px 20px; border-radius: 25px; font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'Red Hat Display', sans-serif;">
+                    En savoir plus
                   </button>
                 </div>
               `
