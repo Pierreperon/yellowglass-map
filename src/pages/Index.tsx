@@ -75,12 +75,32 @@ const Index: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
 
-  // Fonction pour forcer le redimensionnement de la carte
+  // Fonction pour obtenir le zoom adaptatif selon la taille d'écran
+  const getResponsiveZoom = () => {
+    const width = window.innerWidth;
+    if (width < 768) return 5.5; // Mobile - zoom plus large
+    if (width < 1024) return 5.8; // Tablette - zoom intermédiaire
+    return 6.2; // Desktop - zoom normal
+  };
+
+  // Fonction pour obtenir le centre adaptatif
+  const getResponsiveCenter = () => {
+    const width = window.innerWidth;
+    if (width < 768) {
+      return { lat: 46.8566, lng: 2.8522 }; // Mobile - légèrement décalé à l'est
+    }
+    return { lat: 46.8566, lng: 2.3522 }; // Desktop/Tablette - centre normal
+  };
+
+  // Fonction pour forcer le redimensionnement de la carte avec zoom adaptatif
   const resizeMap = () => {
     if (map && window.google && window.google.maps) {
       setTimeout(() => {
         window.google.maps.event.trigger(map, 'resize');
-        map.setCenter({ lat: 46.8566, lng: 2.3522 });
+        const newCenter = getResponsiveCenter();
+        const newZoom = getResponsiveZoom();
+        map.setCenter(newCenter);
+        map.setZoom(newZoom);
       }, 100);
     }
   };
@@ -117,9 +137,12 @@ const Index: React.FC = () => {
         await loader.load();
         
         if (mapRef.current) {
+          const initialCenter = getResponsiveCenter();
+          const initialZoom = getResponsiveZoom();
+
           const mapInstance = new google.maps.Map(mapRef.current, {
-            center: { lat: 46.8566, lng: 2.3522 },
-            zoom: 6.2,
+            center: initialCenter,
+            zoom: initialZoom,
             restriction: {
               latLngBounds: {
                 north: 51.5,
@@ -219,10 +242,11 @@ const Index: React.FC = () => {
           setMarkers(newMarkers);
           setIsLoading(false);
 
-          // Forcer le redimensionnement après l'initialisation
+          // Forcer le redimensionnement après l'initialisation avec zoom adaptatif
           setTimeout(() => {
             window.google.maps.event.trigger(mapInstance, 'resize');
-            mapInstance.setCenter({ lat: 46.8566, lng: 2.3522 });
+            mapInstance.setCenter(initialCenter);
+            mapInstance.setZoom(initialZoom);
           }, 1000);
         }
       } catch (error) {
@@ -238,7 +262,9 @@ const Index: React.FC = () => {
     setSelectedCenter(center);
     if (map) {
       map.panTo({ lat: center.lat, lng: center.lng });
-      map.setZoom(12);
+      // Zoom adaptatif pour le focus sur un centre
+      const focusZoom = window.innerWidth < 768 ? 10 : 12;
+      map.setZoom(focusZoom);
       
       const marker = markers.find(m => m.getTitle() === center.name);
       if (marker && (marker as any).infoWindow) {
@@ -250,8 +276,10 @@ const Index: React.FC = () => {
   const resetView = () => {
     setSelectedCenter(null);
     if (map) {
-      map.panTo({ lat: 46.8566, lng: 2.3522 });
-      map.setZoom(6.2);
+      const resetCenter = getResponsiveCenter();
+      const resetZoom = getResponsiveZoom();
+      map.panTo(resetCenter);
+      map.setZoom(resetZoom);
       markers.forEach(m => {
         if ((m as any).infoWindow) {
           (m as any).infoWindow.close();
