@@ -42,12 +42,27 @@ body {
   background: var(--yellow-glass-dark);
 }
 
-/* Assurer que la carte est visible sur mobile */
+/* Forcer la hauteur de la carte sur mobile */
 @media (max-width: 1023px) {
-  .h-80 {
+  .flex-1[data-mobile-height] {
     height: 320px !important;
     min-height: 320px !important;
+    max-height: 320px !important;
   }
+}
+
+/* Hauteur pleine sur desktop */
+@media (min-width: 1024px) {
+  .flex-1[data-desktop-height] {
+    height: 100vh !important;
+    min-height: 100vh !important;
+  }
+}
+
+/* Forcer Google Maps à prendre toute la place */
+.gm-style {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* Animation pour les pins */

@@ -74,6 +74,37 @@ const Index: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+
+  // Fonction pour forcer le redimensionnement de la carte
+  const resizeMap = () => {
+    if (map && window.google && window.google.maps) {
+      setTimeout(() => {
+        window.google.maps.event.trigger(map, 'resize');
+        map.setCenter({ lat: 46.8566, lng: 2.3522 });
+      }, 100);
+    }
+  };
+
+  // Écouter les changements de taille de fenêtre
+  useEffect(() => {
+    const handleResize = () => {
+      resizeMap();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [map]);
+
+  // Forcer le redimensionnement après le chargement initial
+  useEffect(() => {
+    if (map && !isLoading) {
+      const timer = setTimeout(() => {
+        resizeMap();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [map, isLoading]);
+
   useEffect(() => {
     const initMap = async () => {
       const loader = new Loader({
@@ -187,6 +218,12 @@ const Index: React.FC = () => {
 
           setMarkers(newMarkers);
           setIsLoading(false);
+
+          // Forcer le redimensionnement après l'initialisation
+          setTimeout(() => {
+            window.google.maps.event.trigger(mapInstance, 'resize');
+            mapInstance.setCenter({ lat: 46.8566, lng: 2.3522 });
+          }, 1000);
         }
       } catch (error) {
         console.error("Erreur lors du chargement de Google Maps:", error);
@@ -340,8 +377,8 @@ const Index: React.FC = () => {
           </div>
         </div>
 
-        {/* Map Container - Toujours visible */}
-        <div className="flex-1 relative order-1 lg:order-2 h-80 lg:h-screen">
+        {/* Map Container - Toujours visible avec forçage du redimensionnement */}
+        <div className="flex-1 relative order-1 lg:order-2" style={{ height: '320px' }} data-mobile-height="320px" data-desktop-height="100vh">
           {isLoading && (
             <div className="absolute inset-0 bg-white flex items-center justify-center z-10">
               <div className="text-center">
@@ -350,7 +387,7 @@ const Index: React.FC = () => {
               </div>
             </div>
           )}
-          <div ref={mapRef} className="w-full h-full" />
+          <div ref={mapRef} className="w-full h-full" style={{ minHeight: '320px' }} />
         </div>
         
       </div>
