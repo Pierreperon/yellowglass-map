@@ -130,7 +130,34 @@ const Index: React.FC = () => {
     }
   }, [map, isLoading]);
 
-  // Helper function for constrained map movement
+  // Helper function to center marker with pixel-perfect offset
+  const centerWithOffset = (map: google.maps.Map, lat: number, lng: number, offsetX: number, offsetY: number) => {
+    const scale = Math.pow(2, map.getZoom() || 6);
+    const proj = map.getProjection();
+    if (!proj) {
+      map.setCenter({ lat, lng });
+      return;
+    }
+    
+    const latLng = new google.maps.LatLng(lat, lng);
+    const worldPoint = proj.fromLatLngToPoint(latLng);
+    if (!worldPoint) {
+      map.setCenter({ lat, lng });
+      return;
+    }
+    
+    const pixelOffset = new google.maps.Point(offsetX / scale, offsetY / scale);
+    const targetPoint = new google.maps.Point(
+      worldPoint.x - pixelOffset.x,
+      worldPoint.y - pixelOffset.y
+    );
+    const targetLatLng = proj.fromPointToLatLng(targetPoint);
+    if (targetLatLng) {
+      map.setCenter(targetLatLng);
+    }
+  };
+
+  // Helper function for constrained map movement with precise centering
   const moveMapToMarker = (lat: number, lng: number, centerId: number, mode: 'mobile' | 'tablet' | 'desktop') => {
     if (!map) return;
 
@@ -157,19 +184,18 @@ const Index: React.FC = () => {
       map.setZoom(targetZoom);
     }
 
-    // Center on marker
-    map.panTo({ lat, lng });
-
-    // Single panBy with appropriate offset after render
+    // Calculate pixel offsets based on mode
+    const offsetX = 0;
     const offsetY = mode === 'mobile' 
-      ? Math.round(window.innerHeight * 0.12)
+      ? Math.round(window.innerHeight * 0.28)
       : mode === 'tablet'
-      ? Math.round(window.innerHeight * 0.10)
+      ? Math.round(window.innerHeight * 0.22)
       : -90; // desktop
 
+    // Use precise pixel-based centering
     requestAnimationFrame(() => {
       setTimeout(() => {
-        map.panBy(0, offsetY);
+        centerWithOffset(map, lat, lng, offsetX, offsetY);
       }, 50);
     });
   };
@@ -304,11 +330,11 @@ const Index: React.FC = () => {
                 const mode = window.innerWidth < 768 ? 'mobile' : 'tablet';
                 moveMapToMarker(center.lat, center.lng, center.id, mode);
               } else {
-                // Desktop: open info window and pan to reveal it
+                // Desktop: open info window and use precise centering
                 infoWindow.open(mapInstance, marker);
                 requestAnimationFrame(() => {
                   setTimeout(() => {
-                    mapInstance.panBy(0, -90);
+                    centerWithOffset(mapInstance, center.lat, center.lng, 0, -90);
                   }, 50);
                 });
               }
@@ -372,7 +398,7 @@ const Index: React.FC = () => {
           (marker as any).infoWindow.open(map, marker);
           requestAnimationFrame(() => {
             setTimeout(() => {
-              map.panBy(0, -90);
+              centerWithOffset(map, center.lat, center.lng, 0, -90);
             }, 50);
           });
         }
@@ -385,15 +411,19 @@ const Index: React.FC = () => {
     setDrawerOpen(false);
     lastInteractionRef.current = null;
     if (map) {
-      const resetCenter = getResponsiveCenter();
-      const resetZoom = getResponsiveZoom();
-      map.panTo(resetCenter);
-      map.setZoom(resetZoom);
+      // Close all info windows
       markers.forEach(m => {
         if ((m as any).infoWindow) {
           (m as any).infoWindow.close();
         }
       });
+      
+      // Fit bounds to show all centers
+      const bounds = new google.maps.LatLngBounds();
+      YELLOW_GLASS_CENTERS.forEach(center => {
+        bounds.extend({ lat: center.lat, lng: center.lng });
+      });
+      map.fitBounds(bounds, { top: 32, right: 16, bottom: 32, left: 16 });
     }
   };
 
@@ -525,6 +555,18 @@ const Index: React.FC = () => {
             </div>
           )}
           <div ref={mapRef} className="w-full h-full" style={{ minHeight: '320px' }} />
+          
+          {/* Floating Reset View Button */}
+          {selectedCenter && (
+            <button
+              onClick={resetView}
+              className="absolute bottom-3 right-3 z-10 bg-white shadow-lg hover:shadow-xl px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-sm font-semibold text-gray-900 border border-gray-200 hover:bg-gray-50"
+              aria-label="Voir tous les centres"
+            >
+              <Navigation2 size={16} className="text-yellow-600" />
+              Voir tous les centres
+            </button>
+          )}
         </div>
         
       </div>
