@@ -1,4 +1,5 @@
 import { Search, Navigation2 } from 'lucide-react';
+import logoWhite from '@/assets/yellowglass-logo-white.png';
 
 interface SearchHeaderProps {
   searchTerm: string;
@@ -27,24 +28,16 @@ export const SearchHeader = ({ searchTerm, onSearchChange, onGeolocation }: Sear
   return (
     <header className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Logo Yellow Glass blanc sur fond noir */}
+        {/* Logo Yellow Glass */}
         <div className="flex justify-center mb-8 animate-fade-in-up">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-3">
             <span className="text-4xl font-bold text-white">yell</span>
-            {/* Logo ovale blanc */}
-            <div className="relative mx-2">
-              <div className="bg-white rounded-full w-16 h-8 flex items-center justify-center">
-                <div className="bg-white w-10 h-3 rounded-full border-2 border-gray-900 relative">
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rotate-12">
-                    <div className="bg-gray-900 w-6 h-1.5 rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <span className="text-4xl font-bold text-white">w</span>
-            <div className="ml-3">
-              <div className="text-2xl font-bold text-white">glass</div>
-            </div>
+            <img 
+              src={logoWhite} 
+              alt="Yellow Glass Logo" 
+              className="h-8 w-auto"
+            />
+            <span className="text-4xl font-bold text-white">w glass</span>
           </div>
         </div>
 
