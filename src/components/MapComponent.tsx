@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { Agency } from '@/types/agency';
-import pinIcon from '@/assets/yellowglass-pin.png';
 
 interface MapComponentProps {
   agencies: Agency[];
@@ -75,16 +74,30 @@ export const MapComponent = ({ agencies, selectedAgency, onAgencySelect }: MapCo
 
           setMap(mapInstance);
 
-          // Create markers with actual Yellow Glass pin
+          // Create markers with custom Yellow Glass pins
           const newMarkers = agencies.map((agency) => {
             const marker = new google.maps.Marker({
               position: { lat: agency.lat, lng: agency.lng },
               map: mapInstance,
               title: agency.name,
               icon: {
-                url: pinIcon,
-                scaledSize: new google.maps.Size(50, 50),
-                anchor: new google.maps.Point(25, 50)
+                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                  <svg width="60" height="80" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <filter id="shadow${agency.id}" x="-50%" y="-50%" width="200%" height="200%">
+                        <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.3"/>
+                      </filter>
+                    </defs>
+                    <!-- Pin shape -->
+                    <path d="M30 5 C40 5, 50 15, 50 25 C50 35, 30 65, 30 65 C30 65, 10 35, 10 25 C10 15, 20 5, 30 5 Z" fill="#FFD700" stroke="#333" stroke-width="2" filter="url(#shadow${agency.id})"/>
+                    <!-- Yellow Glass logo inside -->
+                    <rect x="15" y="15" width="30" height="15" rx="7.5" fill="#333333"/>
+                    <rect x="18" y="18" width="24" height="9" rx="4.5" fill="#FFD700"/>
+                    <rect x="20" y="20" width="8" height="2" rx="1" fill="#333333" transform="rotate(15 24 21)"/>
+                  </svg>
+                `),
+                scaledSize: new google.maps.Size(60, 80),
+                anchor: new google.maps.Point(30, 65)
               }
             });
 
