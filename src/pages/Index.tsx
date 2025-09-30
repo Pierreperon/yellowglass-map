@@ -77,6 +77,7 @@ const Index: React.FC = () => {
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 1024);
+  const lastInteractionRef = useRef<{ centerId: number; timestamp: number } | null>(null);
 
   // Fonction pour obtenir le zoom adaptatif selon la taille d'écran (plus large)
   const getResponsiveZoom = () => {
@@ -128,6 +129,50 @@ const Index: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [map, isLoading]);
+
+  // Helper function for constrained map movement
+  const moveMapToMarker = (lat: number, lng: number, centerId: number, mode: 'mobile' | 'tablet' | 'desktop') => {
+    if (!map) return;
+
+    // Debounce: skip if same center clicked within 500ms
+    const now = Date.now();
+    if (lastInteractionRef.current && 
+        lastInteractionRef.current.centerId === centerId && 
+        now - lastInteractionRef.current.timestamp < 500) {
+      return;
+    }
+    lastInteractionRef.current = { centerId, timestamp: now };
+
+    // Constrained zoom: only zoom if current zoom is less than target
+    const currentZoom = map.getZoom() || 6;
+    let targetZoom = currentZoom;
+    
+    if (mode === 'mobile' && currentZoom < 10) {
+      targetZoom = 10;
+    } else if (mode === 'tablet' && currentZoom < 11) {
+      targetZoom = 11;
+    }
+    
+    if (targetZoom !== currentZoom) {
+      map.setZoom(targetZoom);
+    }
+
+    // Center on marker
+    map.panTo({ lat, lng });
+
+    // Single panBy with appropriate offset after render
+    const offsetY = mode === 'mobile' 
+      ? Math.round(window.innerHeight * 0.12)
+      : mode === 'tablet'
+      ? Math.round(window.innerHeight * 0.10)
+      : -90; // desktop
+
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        map.panBy(0, offsetY);
+      }, 50);
+    });
+  };
 
   useEffect(() => {
     const initMap = async () => {
@@ -249,21 +294,23 @@ const Index: React.FC = () => {
               setSelectedCenter(center);
               
               if (isSmall) {
+                // Skip if drawer already open for this center
+                if (drawerOpen && selectedCenter?.id === center.id) {
+                  return;
+                }
+                
                 // Small screen: open drawer and adjust map
                 setDrawerOpen(true);
-                const zoom = window.innerWidth < 768 ? 10 : 11;
-                mapInstance.setZoom(zoom);
-                mapInstance.panTo({ lat: center.lat, lng: center.lng });
-                setTimeout(() => {
-                  const panOffset = Math.round(window.innerHeight * 0.22);
-                  mapInstance.panBy(0, panOffset);
-                }, 100);
+                const mode = window.innerWidth < 768 ? 'mobile' : 'tablet';
+                moveMapToMarker(center.lat, center.lng, center.id, mode);
               } else {
                 // Desktop: open info window and pan to reveal it
                 infoWindow.open(mapInstance, marker);
-                setTimeout(() => {
-                  mapInstance.panBy(0, -120);
-                }, 100);
+                requestAnimationFrame(() => {
+                  setTimeout(() => {
+                    mapInstance.panBy(0, -90);
+                  }, 50);
+                });
               }
             });
 
@@ -291,6 +338,11 @@ const Index: React.FC = () => {
   }, []);
 
   const handleCenterClick = (center: YellowGlassCenter) => {
+    // Skip if drawer already open for this center
+    if (isSmallScreen && drawerOpen && selectedCenter?.id === center.id) {
+      return;
+    }
+
     setSelectedCenter(center);
     
     if (map) {
@@ -306,24 +358,23 @@ const Index: React.FC = () => {
       if (isSmallScreen) {
         // Small screen: open drawer
         setDrawerOpen(true);
-        const zoom = window.innerWidth < 768 ? 10 : 11;
-        map.setZoom(zoom);
-        map.panTo({ lat: center.lat, lng: center.lng });
-        setTimeout(() => {
-          const panOffset = Math.round(window.innerHeight * 0.22);
-          map.panBy(0, panOffset);
-        }, 100);
+        const mode = window.innerWidth < 768 ? 'mobile' : 'tablet';
+        moveMapToMarker(center.lat, center.lng, center.id, mode);
       } else {
-        // Desktop: open info window
-        const focusZoom = 12;
-        map.setZoom(focusZoom);
+        // Desktop: open info window with constrained zoom
+        const currentZoom = map.getZoom() || 6;
+        if (currentZoom < 12) {
+          map.setZoom(12);
+        }
         map.panTo({ lat: center.lat, lng: center.lng });
         
         if (marker && (marker as any).infoWindow) {
           (marker as any).infoWindow.open(map, marker);
-          setTimeout(() => {
-            map.panBy(0, -120);
-          }, 100);
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              map.panBy(0, -90);
+            }, 50);
+          });
         }
       }
     }
@@ -332,6 +383,7 @@ const Index: React.FC = () => {
   const resetView = () => {
     setSelectedCenter(null);
     setDrawerOpen(false);
+    lastInteractionRef.current = null;
     if (map) {
       const resetCenter = getResponsiveCenter();
       const resetZoom = getResponsiveZoom();
