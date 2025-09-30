@@ -3,7 +3,7 @@ import { Loader } from '@googlemaps/js-api-loader';
 import { MapPin, Phone, Clock, Search, Navigation2 } from 'lucide-react';
 import mapPinIcon from '@/assets/mappin.png';
 import { CenterDetailsDrawer } from '@/components/CenterDetailsDrawer';
-import { centerMarker, getScreenMode } from '@/lib/mapPositioning';
+import { centerMarkerAtScreenPoint, getTargetScreenPoint, getTargetZoom } from '@/lib/mapCenter';
 
 interface YellowGlassCenter {
   id: number;
@@ -133,7 +133,7 @@ const Index: React.FC = () => {
     }
   }, [map, isLoading]);
 
-  // Helper function for constrained map movement with precise centering
+  // Helper function for precise screen-point-based centering
   const moveMapToMarker = async (lat: number, lng: number, centerId: number) => {
     if (!map) return;
 
@@ -151,9 +151,21 @@ const Index: React.FC = () => {
     lastCenterIdRef.current = centerId;
     lastMoveAtRef.current = now;
 
-    const mode = getScreenMode();
-    const latLng = new google.maps.LatLng(lat, lng);
-    await centerMarker(map, latLng, mode);
+    // Get target screen point based on device size
+    const container = map.getDiv();
+    const rect = container.getBoundingClientRect();
+    const { targetX, targetY } = getTargetScreenPoint(rect);
+
+    // Zoom if needed
+    const targetZoom = getTargetZoom();
+    const currentZoom = map.getZoom() ?? 0;
+    if (currentZoom < targetZoom) {
+      map.setZoom(targetZoom);
+    }
+
+    // Center marker at exact screen point (anchor y = 65)
+    const markerLatLng = new google.maps.LatLng(lat, lng);
+    await centerMarkerAtScreenPoint(map, markerLatLng, targetX, targetY, 65);
   };
 
   useEffect(() => {
@@ -282,9 +294,19 @@ const Index: React.FC = () => {
               } else {
                 // Desktop: open info window and center
                 infoWindow.open(mapInstance, marker);
-                const mode = getScreenMode();
+                
+                // Get target screen point and zoom
+                const container = mapInstance.getDiv();
+                const rect = container.getBoundingClientRect();
+                const { targetX, targetY } = getTargetScreenPoint(rect);
+                const targetZoom = getTargetZoom();
+                const currentZoom = mapInstance.getZoom() ?? 0;
+                if (currentZoom < targetZoom) {
+                  mapInstance.setZoom(targetZoom);
+                }
+                
                 const latLng = new google.maps.LatLng(center.lat, center.lng);
-                await centerMarker(mapInstance, latLng, mode);
+                await centerMarkerAtScreenPoint(mapInstance, latLng, targetX, targetY, 65);
               }
             });
 
@@ -332,9 +354,19 @@ const Index: React.FC = () => {
         // Desktop: open info window and center
         if (marker && (marker as any).infoWindow) {
           (marker as any).infoWindow.open(map, marker);
-          const mode = getScreenMode();
+          
+          // Get target screen point and zoom
+          const container = map.getDiv();
+          const rect = container.getBoundingClientRect();
+          const { targetX, targetY } = getTargetScreenPoint(rect);
+          const targetZoom = getTargetZoom();
+          const currentZoom = map.getZoom() ?? 0;
+          if (currentZoom < targetZoom) {
+            map.setZoom(targetZoom);
+          }
+          
           const latLng = new google.maps.LatLng(center.lat, center.lng);
-          await centerMarker(map, latLng, mode);
+          await centerMarkerAtScreenPoint(map, latLng, targetX, targetY, 65);
         }
       }
     }
