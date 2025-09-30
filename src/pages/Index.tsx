@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { MapPin, Phone, Clock, Search, Navigation2 } from 'lucide-react';
 import mapPinIcon from '@/assets/mappin.png';
+import { CenterDetailsDrawer } from '@/components/CenterDetailsDrawer';
 
 interface YellowGlassCenter {
   id: number;
@@ -74,6 +75,8 @@ const Index: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 1024);
 
   // Fonction pour obtenir le zoom adaptatif selon la taille d'écran (plus large)
   const getResponsiveZoom = () => {
@@ -108,6 +111,7 @@ const Index: React.FC = () => {
   // Écouter les changements de taille de fenêtre
   useEffect(() => {
     const handleResize = () => {
+      setIsSmallScreen(window.innerWidth < 1024);
       resizeMap();
     };
 
@@ -200,7 +204,13 @@ const Index: React.FC = () => {
 
             const infoWindow = new google.maps.InfoWindow({
               content: `
-                <div style="padding: 15px; min-width: 280px; font-family: 'Red Hat Display', sans-serif;">
+                <div style="
+                  padding: 20px; 
+                  max-width: 340px; 
+                  max-height: 60vh;
+                  overflow-y: auto;
+                  font-family: 'Red Hat Display', sans-serif;
+                ">
                   <div style="display: flex; align-items: center; margin-bottom: 12px;">
                     <div style="background: #FFD700; width: 35px; height: 20px; border-radius: 10px; margin-right: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #333;">
                       <div style="background: #333; width: 12px; height: 2px; border-radius: 1px; transform: rotate(15deg);"></div>
@@ -221,18 +231,40 @@ const Index: React.FC = () => {
                     En savoir plus
                   </button>
                 </div>
-              `
+              `,
+              maxWidth: 360,
+              pixelOffset: new google.maps.Size(0, -10)
             });
 
             marker.addListener("click", () => {
+              const isSmall = window.innerWidth < 1024;
+              
+              // Close all info windows
               markers.forEach(m => {
                 if ((m as any).infoWindow) {
                   (m as any).infoWindow.close();
                 }
               });
               
-              infoWindow.open(mapInstance, marker);
               setSelectedCenter(center);
+              
+              if (isSmall) {
+                // Small screen: open drawer and adjust map
+                setDrawerOpen(true);
+                const zoom = window.innerWidth < 768 ? 10 : 11;
+                mapInstance.setZoom(zoom);
+                mapInstance.panTo({ lat: center.lat, lng: center.lng });
+                setTimeout(() => {
+                  const panOffset = Math.round(window.innerHeight * 0.22);
+                  mapInstance.panBy(0, panOffset);
+                }, 100);
+              } else {
+                // Desktop: open info window and pan to reveal it
+                infoWindow.open(mapInstance, marker);
+                setTimeout(() => {
+                  mapInstance.panBy(0, -120);
+                }, 100);
+              }
             });
 
             (marker as any).infoWindow = infoWindow;
@@ -260,21 +292,46 @@ const Index: React.FC = () => {
 
   const handleCenterClick = (center: YellowGlassCenter) => {
     setSelectedCenter(center);
+    
     if (map) {
-      map.panTo({ lat: center.lat, lng: center.lng });
-      // Zoom adaptatif pour le focus sur un centre (réduit aussi)
-      const focusZoom = window.innerWidth < 768 ? 9 : window.innerWidth < 1024 ? 10 : 12;
-      map.setZoom(focusZoom);
-      
       const marker = markers.find(m => m.getTitle() === center.name);
-      if (marker && (marker as any).infoWindow) {
-        (marker as any).infoWindow.open(map, marker);
+      
+      // Close all info windows first
+      markers.forEach(m => {
+        if ((m as any).infoWindow) {
+          (m as any).infoWindow.close();
+        }
+      });
+      
+      if (isSmallScreen) {
+        // Small screen: open drawer
+        setDrawerOpen(true);
+        const zoom = window.innerWidth < 768 ? 10 : 11;
+        map.setZoom(zoom);
+        map.panTo({ lat: center.lat, lng: center.lng });
+        setTimeout(() => {
+          const panOffset = Math.round(window.innerHeight * 0.22);
+          map.panBy(0, panOffset);
+        }, 100);
+      } else {
+        // Desktop: open info window
+        const focusZoom = 12;
+        map.setZoom(focusZoom);
+        map.panTo({ lat: center.lat, lng: center.lng });
+        
+        if (marker && (marker as any).infoWindow) {
+          (marker as any).infoWindow.open(map, marker);
+          setTimeout(() => {
+            map.panBy(0, -120);
+          }, 100);
+        }
       }
     }
   };
 
   const resetView = () => {
     setSelectedCenter(null);
+    setDrawerOpen(false);
     if (map) {
       const resetCenter = getResponsiveCenter();
       const resetZoom = getResponsiveZoom();
@@ -419,6 +476,18 @@ const Index: React.FC = () => {
         </div>
         
       </div>
+
+      {/* Drawer for mobile/tablet */}
+      <CenterDetailsDrawer
+        center={selectedCenter}
+        open={drawerOpen}
+        onOpenChange={(open) => {
+          setDrawerOpen(open);
+          if (!open) {
+            setSelectedCenter(null);
+          }
+        }}
+      />
     </div>
   );
 };
