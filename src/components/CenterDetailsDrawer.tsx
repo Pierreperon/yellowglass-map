@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin, Phone, X, Mail } from 'lucide-react';
+import mapPinLogo from '@/assets/MapPin.png';
 import {
   Drawer,
   DrawerContent,
@@ -18,6 +19,7 @@ interface YellowGlassCenter {
   postalCode: string;
   phone: string;
   email: string;
+  url: string;
   lat: number;
   lng: number;
 }
@@ -28,14 +30,6 @@ interface CenterDetailsDrawerProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Composant SVG pour le logo Yellow Glass
-const YellowGlassLogo = () => (
-  <svg width="24" height="16" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-    <rect x="5" y="5" width="10" height="5" rx="2.5" fill="#333333"/>
-    <rect x="6" y="6" width="8" height="3" rx="1.5" fill="#FFD700"/>
-    <rect x="7" y="7" width="3" height="1" rx="0.5" fill="#333333" transform="rotate(15 8.5 7.5)"/>
-  </svg>
-);
 
 export const CenterDetailsDrawer: React.FC<CenterDetailsDrawerProps> = ({
   center,
@@ -67,7 +61,7 @@ export const CenterDetailsDrawer: React.FC<CenterDetailsDrawerProps> = ({
             </DrawerClose>
             
             <div className="flex items-center gap-3 pr-12">
-              <YellowGlassLogo />
+              <img src={mapPinLogo} alt="Yellow Glass" className="w-10 h-12 flex-shrink-0" />
               <DrawerTitle id="drawer-title" className="text-xl font-bold text-left">
                 {center.name}
               </DrawerTitle>
@@ -119,12 +113,19 @@ export const CenterDetailsDrawer: React.FC<CenterDetailsDrawerProps> = ({
             </div>
 
             {/* CTA Button */}
-            <Button
-              className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full py-6"
-              data-testid="learn-more-cta"
+            <a 
+              href={center.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block w-full"
             >
-              En savoir plus
-            </Button>
+              <Button
+                className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold rounded-full py-6"
+                data-testid="learn-more-cta"
+              >
+                En savoir plus
+              </Button>
+            </a>
           </div>
         </div>
       </DrawerContent>

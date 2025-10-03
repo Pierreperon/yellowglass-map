@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { MapPin, Phone, Search, Navigation2, Mail } from 'lucide-react';
 import mapPinIcon from '@/assets/mappin.png';
+import mapPinLogo from '@/assets/MapPin.png';
 import { CenterDetailsDrawer } from '@/components/CenterDetailsDrawer';
 import { centerMarkerAtScreenPoint, getTargetScreenPoint, getTargetZoom } from '@/lib/mapCenter';
 
@@ -13,6 +14,7 @@ interface YellowGlassCenter {
   postalCode: string;
   phone: string;
   email: string;
+  url: string;
   lat: number;
   lng: number;
 }
@@ -26,6 +28,7 @@ const YELLOW_GLASS_CENTERS: YellowGlassCenter[] = [
     postalCode: "35270",
     phone: "06 67 32 26 09",
     email: "contact@yellowglassrennes.fr",
+    url: "https://www.yellowglass.fr/nos-agences/rennes",
     lat: 48.4167,
     lng: -1.7500,
   },
@@ -37,6 +40,7 @@ const YELLOW_GLASS_CENTERS: YellowGlassCenter[] = [
     postalCode: "49170",
     phone: "06 35 72 67 27",
     email: "contact@yellowglassangers.com",
+    url: "https://www.yellowglass.fr/nos-agences/angers",
     lat: 47.3833,
     lng: -1.0833,
   },
@@ -48,6 +52,7 @@ const YELLOW_GLASS_CENTERS: YellowGlassCenter[] = [
     postalCode: "06200",
     phone: "04 83 11 06 39",
     email: "contact@yellowglass.fr",
+    url: "https://www.yellowglass.fr/nos-agences/nice",
     lat: 43.7102,
     lng: 7.2620,
   },
@@ -59,6 +64,7 @@ const YELLOW_GLASS_CENTERS: YellowGlassCenter[] = [
     postalCode: "83440",
     phone: "04 83 11 06 39",
     email: "contact@yellowglass.fr",
+    url: "https://www.yellowglass.fr/nos-agences/tourrettes",
     lat: 43.5667,
     lng: 6.7500,
   }
@@ -77,14 +83,6 @@ const Index: React.FC = () => {
   const lastCenterIdRef = useRef<number | null>(null);
   const lastMoveAtRef = useRef<number>(0);
 
-  // Composant SVG pour le logo Yellow Glass
-  const YellowGlassLogo = () => (
-    <svg width="20" height="12" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-      <rect x="5" y="5" width="10" height="5" rx="2.5" fill="#333333"/>
-      <rect x="6" y="6" width="8" height="3" rx="1.5" fill="#FFD700"/>
-      <rect x="7" y="7" width="3" height="1" rx="0.5" fill="#333333" transform="rotate(15 8.5 7.5)"/>
-    </svg>
-  );
 
   // Fonction pour obtenir le zoom adaptatif selon la taille d'écran (plus large)
   const getResponsiveZoom = () => {
@@ -468,7 +466,7 @@ const Index: React.FC = () => {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <YellowGlassLogo />
+                      <img src={mapPinLogo} alt="Yellow Glass" className="w-6 h-8 flex-shrink-0" />
                       <h3 className="font-bold text-gray-900 text-lg">
                         {center.name}
                       </h3>
@@ -498,9 +496,16 @@ const Index: React.FC = () => {
                     </div>
                   </div>
                   
-                  <button className="w-full bg-yellow-400 text-gray-800 text-sm px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors font-bold">
-                    En savoir plus
-                  </button>
+                  <a 
+                    href={center.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block w-full"
+                  >
+                    <button className="w-full bg-yellow-400 text-gray-800 text-sm px-4 py-2 rounded-full hover:bg-yellow-500 transition-colors font-bold">
+                      En savoir plus
+                    </button>
+                  </a>
                 </div>
               ))}
             </div>
