@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Phone, Clock, X } from 'lucide-react';
+import { MapPin, Phone, X, Mail } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -17,10 +17,9 @@ interface YellowGlassCenter {
   city: string;
   postalCode: string;
   phone: string;
+  email: string;
   lat: number;
   lng: number;
-  hours: string;
-  services: string[];
 }
 
 interface CenterDetailsDrawerProps {
@@ -28,6 +27,15 @@ interface CenterDetailsDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+// Composant SVG pour le logo Yellow Glass
+const YellowGlassLogo = () => (
+  <svg width="24" height="16" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+    <rect x="5" y="5" width="10" height="5" rx="2.5" fill="#333333"/>
+    <rect x="6" y="6" width="8" height="3" rx="1.5" fill="#FFD700"/>
+    <rect x="7" y="7" width="3" height="1" rx="0.5" fill="#333333" transform="rotate(15 8.5 7.5)"/>
+  </svg>
+);
 
 export const CenterDetailsDrawer: React.FC<CenterDetailsDrawerProps> = ({
   center,
@@ -59,9 +67,7 @@ export const CenterDetailsDrawer: React.FC<CenterDetailsDrawerProps> = ({
             </DrawerClose>
             
             <div className="flex items-center gap-3 pr-12">
-              <div className="bg-yellow-400 w-10 h-6 rounded-full flex items-center justify-center border-2 border-gray-800 flex-shrink-0">
-                <div className="bg-gray-800 w-4 h-0.5 rounded-full transform rotate-[15deg]" />
-              </div>
+              <YellowGlassLogo />
               <DrawerTitle id="drawer-title" className="text-xl font-bold text-left">
                 {center.name}
               </DrawerTitle>
@@ -99,31 +105,16 @@ export const CenterDetailsDrawer: React.FC<CenterDetailsDrawerProps> = ({
               </div>
             </div>
 
-            {/* Hours Section */}
+            {/* Email Section */}
             <div className="space-y-2">
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-semibold text-gray-900 mb-1">Horaires</p>
-                  <p className="text-sm text-gray-600">{center.hours}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Services Section */}
-            <div className="space-y-3">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Services disponibles
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {center.services.map((service, index) => (
-                  <span
-                    key={index}
-                    className="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full"
-                  >
-                    {service}
-                  </span>
-                ))}
+              <div className="flex items-center gap-3">
+                <Mail className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                <a
+                  href={`mailto:${center.email}`}
+                  className="font-semibold text-yellow-600 hover:text-yellow-700 transition-colors"
+                >
+                  {center.email}
+                </a>
               </div>
             </div>
 

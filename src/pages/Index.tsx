@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
-import { MapPin, Phone, Clock, Search, Navigation2 } from 'lucide-react';
+import { MapPin, Phone, Search, Navigation2, Mail } from 'lucide-react';
 import mapPinIcon from '@/assets/mappin.png';
 import { CenterDetailsDrawer } from '@/components/CenterDetailsDrawer';
 import { centerMarkerAtScreenPoint, getTargetScreenPoint, getTargetZoom } from '@/lib/mapCenter';
@@ -12,10 +12,9 @@ interface YellowGlassCenter {
   city: string;
   postalCode: string;
   phone: string;
+  email: string;
   lat: number;
   lng: number;
-  hours: string;
-  services: string[];
 }
 
 const YELLOW_GLASS_CENTERS: YellowGlassCenter[] = [
@@ -25,11 +24,10 @@ const YELLOW_GLASS_CENTERS: YellowGlassCenter[] = [
     address: "3, Rue Jules Corvaisier",
     city: "Combourg",
     postalCode: "35270",
-    phone: "02 99 73 12 34",
+    phone: "06 67 32 26 09",
+    email: "contact@yellowglassrennes.fr",
     lat: 48.4167,
     lng: -1.7500,
-    hours: "Lun-Ven: 8h00-18h00, Sam: 8h00-12h00",
-    services: ["Remplacement pare-brise", "Réparation impact", "Intervention à domicile"]
   },
   {
     id: 2,
@@ -37,11 +35,10 @@ const YELLOW_GLASS_CENTERS: YellowGlassCenter[] = [
     address: "ACTIVAPARK, Rue du Pré des Landes",
     city: "Saint-Léger-de-Linières",
     postalCode: "49170",
-    phone: "02 41 92 45 67",
+    phone: "06 35 72 67 27",
+    email: "contact@yellowglassangers.com",
     lat: 47.3833,
     lng: -1.0833,
-    hours: "Lun-Ven: 8h00-18h00, Sam: 8h00-12h00",
-    services: ["Remplacement pare-brise", "Réparation impact", "Intervention à domicile"]
   },
   {
     id: 3,
@@ -49,11 +46,10 @@ const YELLOW_GLASS_CENTERS: YellowGlassCenter[] = [
     address: "38 Rte de Canta Galet",
     city: "Nice",
     postalCode: "06200",
-    phone: "04 93 84 56 78",
+    phone: "04 83 11 06 39",
+    email: "contact@yellowglass.fr",
     lat: 43.7102,
     lng: 7.2620,
-    hours: "Lun-Ven: 8h00-18h00, Sam: 8h00-12h00",
-    services: ["Remplacement pare-brise", "Réparation impact", "Intervention à domicile"]
   },
   {
     id: 4,
@@ -61,11 +57,10 @@ const YELLOW_GLASS_CENTERS: YellowGlassCenter[] = [
     address: "121 CHEMIN DE CAMBARRAS LOT 10",
     city: "Tourrettes",
     postalCode: "83440",
-    phone: "04 94 76 89 12",
+    phone: "04 83 11 06 39",
+    email: "contact@yellowglass.fr",
     lat: 43.5667,
     lng: 6.7500,
-    hours: "Lun-Ven: 8h00-18h00, Sam: 8h00-12h00",
-    services: ["Remplacement pare-brise", "Réparation impact", "Intervention à domicile"]
   }
 ];
 
@@ -81,6 +76,15 @@ const Index: React.FC = () => {
   const lastInteractionRef = useRef<{ centerId: number; timestamp: number } | null>(null);
   const lastCenterIdRef = useRef<number | null>(null);
   const lastMoveAtRef = useRef<number>(0);
+
+  // Composant SVG pour le logo Yellow Glass
+  const YellowGlassLogo = () => (
+    <svg width="20" height="12" viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+      <rect x="5" y="5" width="10" height="5" rx="2.5" fill="#333333"/>
+      <rect x="6" y="6" width="8" height="3" rx="1.5" fill="#FFD700"/>
+      <rect x="7" y="7" width="3" height="1" rx="0.5" fill="#333333" transform="rotate(15 8.5 7.5)"/>
+    </svg>
+  );
 
   // Fonction pour obtenir le zoom adaptatif selon la taille d'écran (plus large)
   const getResponsiveZoom = () => {
@@ -264,7 +268,7 @@ const Index: React.FC = () => {
                     <p style="margin: 0; font-size: 14px; color: #FFD700; font-weight: 600;">📞 ${center.phone}</p>
                   </div>
                   <div style="margin-bottom: 12px;">
-                    <p style="margin: 0; font-size: 13px; color: #666;"><strong>Horaires:</strong> ${center.hours}</p>
+                    <p style="margin: 0; font-size: 14px; color: #FFD700; font-weight: 600;">✉️ ${center.email}</p>
                   </div>
                   <button style="background: #FFD700; color: #333; border: none; padding: 10px 20px; border-radius: 25px; font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'Red Hat Display', sans-serif;">
                     En savoir plus
@@ -416,7 +420,7 @@ const Index: React.FC = () => {
                 Nos centres ({YELLOW_GLASS_CENTERS.length})
               </h2>
               <p className="text-sm text-gray-600 mb-4">
-                Choisissez un centre pour le localiser
+                Saisissez votre ville ou votre code postal afin de trouver votre centre.
               </p>
               
               {/* Barre de recherche */}
@@ -463,9 +467,12 @@ const Index: React.FC = () => {
                   onClick={() => handleCenterClick(center)}
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-bold text-gray-900 text-lg">
-                      {center.name}
-                    </h3>
+                    <div className="flex items-center gap-3">
+                      <YellowGlassLogo />
+                      <h3 className="font-bold text-gray-900 text-lg">
+                        {center.name}
+                      </h3>
+                    </div>
                     <span className="bg-yellow-400 text-gray-800 text-xs px-2 py-1 rounded-full font-bold">
                       {center.id}
                     </span>
@@ -484,23 +491,10 @@ const Index: React.FC = () => {
                       <Phone size={14} className="flex-shrink-0 text-yellow-600" />
                       <span className="font-medium">{center.phone}</span>
                     </div>
-                    
-                    <div className="flex items-start gap-2">
-                      <Clock size={14} className="mt-0.5 flex-shrink-0 text-yellow-600" />
-                      <span className="text-xs">{center.hours}</span>
-                    </div>
-                  </div>
 
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-1">
-                      {center.services.map((service, index) => (
-                        <span
-                          key={index}
-                          className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
-                        >
-                          {service}
-                        </span>
-                      ))}
+                    <div className="flex items-center gap-2">
+                      <Mail size={14} className="flex-shrink-0 text-yellow-600" />
+                      <span className="font-medium">{center.email}</span>
                     </div>
                   </div>
                   
