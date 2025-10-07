@@ -101,6 +101,60 @@ const Index: React.FC = () => {
     return { lat: 46.8566, lng: 2.3522 };
   };
 
+  // Fonction pour calculer la distance entre deux points (Haversine)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Rayon de la Terre en km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Fonction de géolocalisation
+  const handleGeolocation = () => {
+    if (!navigator.geolocation) {
+      alert("La géolocalisation n'est pas supportée par votre navigateur.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        if (map) {
+          map.panTo({ lat: latitude, lng: longitude });
+          map.setZoom(11);
+          
+          // Trouver les centres proches (moins de 100km)
+          const closeCenters = YELLOW_GLASS_CENTERS.filter(center => {
+            const distance = calculateDistance(latitude, longitude, center.lat, center.lng);
+            return distance < 100;
+          });
+
+          // Reset la recherche pour montrer tous les centres
+          setSearchTerm("");
+          
+          // Si des centres proches sont trouvés, sélectionner le plus proche
+          if (closeCenters.length > 0) {
+            const closest = closeCenters.reduce((prev, curr) => {
+              const prevDist = calculateDistance(latitude, longitude, prev.lat, prev.lng);
+              const currDist = calculateDistance(latitude, longitude, curr.lat, curr.lng);
+              return currDist < prevDist ? curr : prev;
+            });
+            handleCenterClick(closest);
+          }
+        }
+      },
+      (error) => {
+        console.error("Erreur de géolocalisation:", error);
+        alert("Impossible d'accéder à votre position. Vérifiez que vous avez autorisé la géolocalisation dans votre navigateur.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
   // Fonction pour forcer le redimensionnement de la carte avec zoom adaptatif
   const resizeMap = () => {
     if (map && window.google && window.google.maps) {
@@ -436,7 +490,10 @@ const Index: React.FC = () => {
               </div>
               
               {/* Bouton géolocalisation */}
-              <button className="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-500 transition-colors font-semibold text-sm flex items-center justify-center gap-2">
+              <button 
+                onClick={handleGeolocation}
+                className="w-full bg-yellow-400 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-500 transition-colors font-semibold text-sm flex items-center justify-center gap-2"
+              >
                 📍 Me géolocaliser
               </button>
             </div>
