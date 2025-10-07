@@ -201,7 +201,7 @@ const Index: React.FC = () => {
               {
                 "featureType": "water",
                 "elementType": "geometry",
-                "stylers": [{"color": "#4a90e2"}]
+                "stylers": [{"color": "#87CEEB"}]
               },
               {
                 "featureType": "landscape",
@@ -211,7 +211,7 @@ const Index: React.FC = () => {
               {
                 "featureType": "road",
                 "elementType": "geometry",
-                "stylers": [{"color": "#ffffff"}]
+                "stylers": [{"color": "#FFF1AF"}]
               },
               {
                 "featureType": "poi",
@@ -525,14 +525,16 @@ const Index: React.FC = () => {
           <div ref={mapRef} className="w-full h-full" style={{ minHeight: '320px' }} />
           
           {/* Persistent Floating Reset View Button */}
-          <button
-            onClick={resetView}
-            className="absolute bottom-3 right-3 z-50 bg-white shadow-lg hover:shadow-xl px-4 py-2 rounded-lg transition-all flex items-center gap-2 text-sm font-semibold text-gray-900 border border-gray-200 hover:bg-gray-50"
-            aria-label="Voir tous les centres"
-          >
-            <Navigation2 size={16} className="text-yellow-600" />
-            Voir tous les centres
-          </button>
+          {selectedCenter && (
+            <button
+              onClick={resetView}
+              className="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl px-3 py-1 rounded-lg transition-all flex items-center gap-2 text-xs font-semibold text-gray-900 border border-gray-200 hover:bg-gray-50"
+              aria-label="Voir tous les centres"
+            >
+              <Navigation2 size={14} className="text-yellow-600" />
+              Voir tous les centres
+            </button>
+          )}
         </div>
         
       </div>
