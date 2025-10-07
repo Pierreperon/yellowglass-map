@@ -528,7 +528,7 @@ const Index: React.FC = () => {
           {selectedCenter && (
             <button
               onClick={resetView}
-              className="absolute top-4 right-4 z-50 bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl px-3 py-1 rounded-lg transition-all flex items-center gap-2 text-xs font-semibold text-gray-900 border border-gray-200 hover:bg-gray-50"
+              className="absolute top-4 right-4 z-50 bg-white shadow-lg hover:shadow-xl px-3 py-1 rounded-lg transition-all flex items-center gap-1 text-xs font-semibold text-gray-900 border border-gray-200 hover:bg-gray-50 opacity-100 cursor-pointer"
               aria-label="Voir tous les centres"
             >
               <Navigation2 size={14} className="text-yellow-600" />
