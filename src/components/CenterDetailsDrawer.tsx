@@ -1,6 +1,6 @@
 import React from 'react';
 import { MapPin, Phone, X, Mail } from 'lucide-react';
-import mapPinLogo from '@/assets/MapPin.png';
+import mapPinIcon from '@/assets/MapPin.png';
 import {
   Drawer,
   DrawerContent,
@@ -61,7 +61,7 @@ export const CenterDetailsDrawer: React.FC<CenterDetailsDrawerProps> = ({
             </DrawerClose>
             
             <div className="flex items-center gap-3 pr-12">
-              <img src={mapPinLogo} alt="Yellow Glass" className="w-10 h-12 flex-shrink-0" />
+              <img src={mapPinIcon} alt="Yellow Glass" className="w-10 h-12 flex-shrink-0" />
               <DrawerTitle id="drawer-title" className="text-xl font-bold text-left">
                 {center.name}
               </DrawerTitle>

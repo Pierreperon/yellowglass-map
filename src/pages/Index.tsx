@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { MapPin, Phone, Search, Navigation2, Mail } from 'lucide-react';
-import mapPinIcon from '@/assets/mappin.png';
-import mapPinLogo from '@/assets/MapPin.png';
+import mapPinIcon from '@/assets/MapPin.png';
 import { CenterDetailsDrawer } from '@/components/CenterDetailsDrawer';
 import { centerMarkerAtScreenPoint, getTargetScreenPoint, getTargetZoom } from '@/lib/mapCenter';
 
@@ -523,7 +522,7 @@ const Index: React.FC = () => {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <img src={mapPinLogo} alt="Yellow Glass" className="w-6 h-8 flex-shrink-0" />
+                      <img src={mapPinIcon} alt="Yellow Glass" className="w-6 h-8 flex-shrink-0" />
                       <h3 className="font-bold text-gray-900 text-lg">
                         {center.name}
                       </h3>
