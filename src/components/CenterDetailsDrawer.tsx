@@ -1,6 +1,6 @@
 import React from 'react';
 import { MapPin, Phone, X, Mail } from 'lucide-react';
-import mapPinIcon from '@/assets/MapPin.png';
+import mapPinIcon from '@/assets/mappin.png';
 import {
   Drawer,
   DrawerContent,

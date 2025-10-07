@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { MapPin, Phone, Search, Navigation2, Mail } from 'lucide-react';
-import mapPinIcon from '@/assets/MapPin.png';
+import mapPinIcon from '@/assets/mappin.png';
 import { CenterDetailsDrawer } from '@/components/CenterDetailsDrawer';
 import { centerMarkerAtScreenPoint, getTargetScreenPoint, getTargetZoom } from '@/lib/mapCenter';
 
